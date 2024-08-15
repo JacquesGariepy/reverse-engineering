@@ -32,3 +32,23 @@ class KeyManager:
         except Exception as e:
             logger.error(f"Failed to load or decrypt API key for {provider}: {e}")
             return None
+    
+    def setup_api_keys(self):
+        """Set up API keys for different providers."""
+        providers = set(model.provider for model in self.models.values())
+        for provider in providers:
+            env_var = f"{provider.upper()}_API_KEY"
+            api_key = self._load_encrypted_key(provider.lower())
+    
+            if not api_key:  # If no saved key was found, ask the user
+                api_key = os.getenv(env_var)
+                if not api_key:
+                    api_key = self.io.input(f"Please enter your {provider} API key: ", password=True)
+                    os.environ[env_var] = api_key
+                    
+                    save_key = self.io.confirm(f"Do you want to save this {provider} API key for future sessions?")
+                    if save_key:
+                        self._save_encrypted_key(provider.lower(), api_key)
+            else:
+                os.environ[env_var] = api_key
+

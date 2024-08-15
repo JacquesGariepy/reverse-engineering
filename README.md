@@ -254,7 +254,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use ReverseEngineer in your research or project, please cite it as follows:
 
 ```
-@software{ReverseEngineer2023,
+@software{ReverseEngineer,
   author = {Jacques Gariépy},
   title = {ReverseEngineer: A LLM-powered tool for code analysis and manipulation},
   year = {2024},

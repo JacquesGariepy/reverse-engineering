@@ -1,6 +1,7 @@
 import os
 from .config import Config
 from aider import models, coders, io
+from typing import Optional
 
 class LLMManager:
     def __init__(self, config: Config):

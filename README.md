@@ -75,8 +75,8 @@ Our vision is to empower developers, researchers, and students with AI-assisted 
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone (https://github.com/JacquesGariepy/reverse-engineering.git)
+cd reverse-engineering
 
 # Create and activate a new conda environment
 conda create -n reverse-engineer python=3.9
@@ -91,8 +91,8 @@ pip install aider
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone (https://github.com/JacquesGariepy/reverse-engineering.git)
+cd reverse-engineering
 
 # Install dependencies using poetry
 poetry install
@@ -102,8 +102,8 @@ poetry install
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone [https://github.com/JacquesGariepy/ReverseEngineer.git](https://github.com/JacquesGariepy/reverse-engineering.git)
+cd reverse-engineering
 
 # Install dependencies
 pip install -r requirements.txt

@@ -1,0 +1,26 @@
+# Utiliser une image Windows Server Core comme image de base
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
+
+# Installer Python
+RUN powershell -Command \
+    Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe -OutFile python-installer.exe ; \
+    Start-Process -FilePath python-installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait ; \
+    Remove-Item -Path python-installer.exe
+
+# Définir le répertoire de travail dans le conteneur
+WORKDIR /app
+
+# Copier le fichier requirements.txt et installer les dépendances
+COPY requirements.txt .
+RUN python -m pip install --no-cache-dir -r requirements.txt
+
+# Copier tout le contenu du projet dans le répertoire de travail
+COPY . .
+
+# Exposer le port que l'application utilise (si nécessaire)
+EXPOSE 8000
+
+ENV NAME ReverseEngineer
+
+# Définir la commande par défaut pour exécuter l'application
+CMD ["python", "reverse_engineer_aider.py"]

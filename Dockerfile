@@ -1,20 +1,21 @@
-# Use an official Python runtime as a parent image
+# Utiliser une image Python officielle comme image de base
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Définir le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
-# Install any needed packages specified in requirements.txt
+# Copier le fichier requirements.txt et installer les dépendances
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Copier tout le contenu du projet dans le répertoire de travail
+COPY . .
 
-# Define environment variable
+# Exposer le port que l'application utilise (si nécessaire)
+EXPOSE 8000
+
 ENV NAME ReverseEngineer
 
-# Run app.py when the container launches
-CMD ["python", "reverse_engineer.py"]
+# Définir la commande par défaut pour exécuter l'application
+CMD ["python", "reverse_engineer_aider.py"]
+

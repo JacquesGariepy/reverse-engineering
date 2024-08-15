@@ -1,6 +1,6 @@
 # ReverseEngineer 🧠💻
 
-![ReverseEngineer Logo](https://example.com/reverse_engineer_logo.png)
+![ReverseEngineer Logo](![y2xsxh2k](https://github.com/user-attachments/assets/10f2da63-9893-46d5-a7b9-d138c834f5ac)
 
 > Unleash the power of AI to dissect, analyze, and transform your code.
 

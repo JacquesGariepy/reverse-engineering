@@ -178,16 +178,16 @@ After installation and configuration, you can start using ReverseEngineer right 
 
 ```bash
 # Initialize the tool
-python reverse_engineer.py init
+python reverse_engineer_aider.py init
 
 # Analyze a Python file
-python reverse_engineer.py analyze --file path/to/your/code.py --language python
+python reverse_engineer_aider.py analyze --file path/to/your/code.py --language python
 
 # Generate documentation for a JavaScript file
-python reverse_engineer.py generate-documentation --file path/to/your/code.js --language javascript
+python reverse_engineer_aider.py generate-documentation --file path/to/your/code.js --language javascript
 
 # Perform a security audit on a C++ file
-python reverse_engineer.py security-audit --file path/to/your/code.cpp --language cpp
+python reverse_engineer_aider.py security-audit --file path/to/your/code.cpp --language cpp
 ```
 
 ## Usage Examples
@@ -195,7 +195,7 @@ python reverse_engineer.py security-audit --file path/to/your/code.cpp --languag
 ### Code Analysis
 
 ```bash
-python reverse_engineer.py analyze --file complex_algorithm.py --language python
+python reverse_engineer_aider.py analyze --file complex_algorithm.py --language python
 ```
 
 Output:
@@ -213,7 +213,7 @@ Analysis of complex_algorithm.py:
 ### Security Audit
 
 ```bash
-python reverse_engineer.py security-audit --file login_system.php --language php
+python reverse_engineer_aider.py security-audit --file login_system.php --language php
 ```
 
 Output:
@@ -240,13 +240,15 @@ The typical workflow is as follows:
 
 To add new functionalities:
 
-1. Add a new method to the `ReverseEngineer` class in `reverse_engineer.py`.
+1. Add a new method to the `ReverseEngineer` class in `reverse_engineer_aider.py`.
 2. Create a new CLI command in the same file, following the existing pattern.
 3. Update the README to include information about the new functionality.
 
 ## Dependencies
 
-- [typer](https://typer.tiangolo.com/): For creating the command-line interface
+- [typer](https://
+
+typer.tiangolo.com/): For creating the command-line interface
 - [pydantic](https://pydantic-docs.helpmanual.io/): For data validation and settings management
 - [python-dotenv](https://github.com/theskumar/python-dotenv): For loading environment variables
 - [PyYAML](https://pyyaml.org/): For parsing YAML configuration files

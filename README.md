@@ -69,12 +69,13 @@ Our vision is to empower developers, researchers, and students with AI-assisted 
 - Python 3.7+
 - Git
 - [Conda](https://docs.conda.io/en/latest/miniconda.html) or [Poetry](https://python-poetry.org/docs/#installation) (optional, but recommended for dependency management)
+- [Docker](https://www.docker.com/get-started) (optional, for containerized usage)
 
 ### Option 1: Using conda
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ReverseEngineer.git
+git clone https://github.com/JacquesGariepy/ReverseEngineer.git
 cd ReverseEngineer
 
 # Create and activate a new conda environment
@@ -90,7 +91,7 @@ pip install aider
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ReverseEngineer.git
+git clone https://github.com/JacquesGariepy/ReverseEngineer.git
 cd ReverseEngineer
 
 # Install dependencies using poetry
@@ -101,12 +102,46 @@ poetry install
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ReverseEngineer.git
+git clone https://github.com/JacquesGariepy/ReverseEngineer.git
 cd ReverseEngineer
 
 # Install dependencies
 pip install -r requirements.txt
 ```
+
+### Option 4: Using Docker
+
+You can also run ReverseEngineer using Docker, which ensures a consistent environment across different platforms.
+
+#### Prerequisites
+- [Docker](https://www.docker.com/get-started) installed on your system
+
+#### Steps
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/JacquesGariepy/ReverseEngineer.git
+   cd ReverseEngineer
+   ```
+
+2. Build the Docker image:
+   ```bash
+   docker build -t reverseengineer .
+   ```
+
+3. Run the container:
+   ```bash
+   docker run -it --rm -v $(pwd):/app reverseengineer
+   ```
+
+   On Windows, use this command instead:
+   ```bash
+   docker run -it --rm -v %cd%:/app reverseengineer
+   ```
+
+This will start an interactive shell in the container where you can run ReverseEngineer commands.
+
+Note: The `-v $(pwd):/app` flag mounts your current directory to the `/app` directory in the container, allowing you to analyze local files.
 
 ## Configuration
 

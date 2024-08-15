@@ -83,7 +83,7 @@ conda create -n reverse-engineer python
 conda activate reverse-engineer
 
 # Install dependencies
-conda install -c conda-forge typer pydantic python-dotenv pyyaml requests
+conda install -c conda-forge typer pydantic python-dotenv pyyaml requests aider fernet 
 pip install aider
 ```
 

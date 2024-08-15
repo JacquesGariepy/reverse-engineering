@@ -9,13 +9,14 @@ from datetime import datetime
 import json
 import ast
 import re
-from functools import lru_cache
+from functools import lru_cache, wraps
 import time
 import logging
 from dotenv import load_dotenv
 import yaml
 from pydantic import BaseModel, Field
 from aider import models, prompts, coders, io
+from cryptography.fernet import Fernet  # Added for encryption
 
 # Load environment variables
 load_dotenv()
@@ -55,14 +56,15 @@ class Config(BaseModel):
     rate_limit: Dict[str, Union[int, float]]
 
 class ReverseEngineer:
-    def __init__(self, config_path: str = "config.yaml"):
+    def __init__(self, config_path: str = None):
         """
         Initialize the ReverseEngineer class.
 
         Args:
             config_path (str): Path to the configuration file.
         """
-        self.config = self._load_config(config_path)
+        self.config_path = config_path or os.getenv("REVERSE_ENGINEER_CONFIG_PATH", "config.yaml")
+        self.config = self._load_config(self.config_path)
         self.default_model = self.config.default_model
         self.models = self.config.models
         self.rate_limit = self.config.rate_limit
@@ -85,6 +87,7 @@ class ReverseEngineer:
                 config_dict = yaml.safe_load(f)
             return Config(**config_dict)
         except Exception as e:
+            logger.error(f"Failed to load configuration: {e}")
             raise ReverseEngineerError(f"Error loading configuration: {str(e)}")
 
     def _setup_api_keys(self):
@@ -99,8 +102,28 @@ class ReverseEngineer:
                 
                 save_key = self.io.confirm(f"Do you want to save this {provider} API key for future sessions?")
                 if save_key:
-                    with open(os.path.expanduser(f"~/.{provider.lower()}_api_key"), "w") as f:
-                        f.write(api_key)
+                    self._save_encrypted_key(provider.lower(), api_key)
+
+    def _save_encrypted_key(self, provider: str, api_key: str):
+        """Save the API key securely using encryption."""
+        key_path = os.path.expanduser(f"~/.{provider}_key")
+        encryption_key = Fernet.generate_key()
+        cipher_suite = Fernet(encryption_key)
+        encrypted_key = cipher_suite.encrypt(api_key.encode())
+
+        with open(key_path, 'wb') as f:
+            f.write(encryption_key + b'\n' + encrypted_key)
+
+    def _load_encrypted_key(self, provider: str) -> Optional[str]:
+        """Load and decrypt the API key."""
+        key_path = os.path.expanduser(f"~/.{provider}_key")
+        if not os.path.exists(key_path):
+            return None
+
+        with open(key_path, 'rb') as f:
+            encryption_key, encrypted_key = f.read().split(b'\n')
+            cipher_suite = Fernet(encryption_key)
+            return cipher_suite.decrypt(encrypted_key).decode()
 
     def _initialize_llms(self):
         """Initialize LLMs based on the configuration."""
@@ -119,6 +142,21 @@ class ReverseEngineer:
     def _initialize_coders(self):
         """Initialize coders for each LLM."""
         return {model_name: coders.Coder(llm, self.io) for model_name, llm in self.llms.items()}
+
+    def _check_rate_limit(self):
+        """Check if the current operation would exceed the rate limit."""
+        current_time = time.time()
+        if current_time - self.rate_limit_state['last_reset'] > self.rate_limit['time_frame']:
+            self.rate_limit_state['tokens'] = 0
+            self.rate_limit_state['last_reset'] = current_time
+        
+        if self.rate_limit_state['tokens'] >= self.rate_limit['limit']:
+            wait_time = self.rate_limit['time_frame'] - (current_time - self.rate_limit_state['last_reset'])
+            raise ReverseEngineerError(f"Rate limit exceeded. Please wait {wait_time:.2f} seconds before trying again.")
+
+    def _update_rate_limit(self, tokens: int):
+        """Update the rate limit counter."""
+        self.rate_limit_state['tokens'] += tokens
 
     @lru_cache(maxsize=100)
     def _get_completion(self, prompt: str, model_name: str) -> str:
@@ -142,21 +180,6 @@ class ReverseEngineer:
                     raise ReverseEngineerError(f"Error in API call after {max_retries} attempts: {str(e)}")
                 time.sleep(2 ** attempt)  # Exponential backoff
 
-    def _check_rate_limit(self):
-        """Check if the current operation would exceed the rate limit."""
-        current_time = time.time()
-        if current_time - self.rate_limit_state['last_reset'] > self.rate_limit['time_frame']:
-            self.rate_limit_state['tokens'] = 0
-            self.rate_limit_state['last_reset'] = current_time
-        
-        if self.rate_limit_state['tokens'] >= self.rate_limit['limit']:
-            wait_time = self.rate_limit['time_frame'] - (current_time - self.rate_limit_state['last_reset'])
-            raise ReverseEngineerError(f"Rate limit exceeded. Please wait {wait_time:.2f} seconds before trying again.")
-
-    def _update_rate_limit(self, tokens: int):
-        """Update the rate limit counter."""
-        self.rate_limit_state['tokens'] += tokens
-
     def read_file(self, file_path: str) -> str:
         """Read code from a local file or URL."""
         if self._is_url(file_path):
@@ -178,6 +201,7 @@ class ReverseEngineer:
             with open(file_path, 'r') as file:
                 return file.read()
         except IOError as e:
+            logger.error(f"Error reading file: {e}")
             raise ReverseEngineerError(f"Error reading file: {str(e)}")
 
     def _read_url(self, url: str) -> str:
@@ -187,6 +211,7 @@ class ReverseEngineer:
             response.raise_for_status()
             return response.text
         except requests.RequestException as e:
+            logger.error(f"Error fetching URL: {e}")
             raise ReverseEngineerError(f"Error fetching URL: {str(e)}")
 
     def analyze(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
@@ -249,8 +274,9 @@ class ReverseEngineer:
         prompt = f"Perform a comprehensive security audit on the following {language.value} code:\n\n{code}\n\nIdentify potential security vulnerabilities, suggest fixes, and explain the implications of each issue."
         return self._get_completion(prompt, model_name)
 
-    def save_output(self, output: str, command: str, file: str, output_dir: str = "output", filename: Optional[str] = None):
+    def save_output(self, output: str, command: str, file: str, output_dir: str = None, filename: Optional[str] = None):
         """Save the output to a file."""
+        output_dir = output_dir or os.getenv("REVERSE_ENGINEER_OUTPUT_DIR", "output")
         os.makedirs(output_dir, exist_ok=True)
         
         base_name = os.path.basename(file)
@@ -280,12 +306,12 @@ app = typer.Typer()
 re_engine = None
 
 @app.command()
-def init(config_path: str = typer.Option("config.yaml", help="Path to the configuration file")):
+def init(config_path: str = typer.Option(None, help="Path to the configuration file")):
     """Initialize the ReverseEngineer tool with a configuration file."""
     global re_engine
     try:
         re_engine = ReverseEngineer(config_path)
-        typer.echo(f"ReverseEngineer initialized with configuration from {config_path}")
+        typer.echo(f"ReverseEngineer initialized with configuration from {config_path or 'default location'}")
     except ReverseEngineerError as e:
         typer.echo(f"Error initializing ReverseEngineer: {str(e)}", err=True)
         raise typer.Exit(code=1)

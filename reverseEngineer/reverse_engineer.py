@@ -17,6 +17,8 @@ import yaml
 from pydantic import BaseModel, Field
 from aider import models, prompts, coders, io
 from cryptography.fernet import Fernet  # Added for encryption
+from .config import Config
+from .exceptions import ReverseEngineerError
 
 # Load environment variables
 load_dotenv()

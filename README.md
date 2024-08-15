@@ -160,21 +160,23 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 2. Create a `config.yaml` file with the model configurations:
 
 ```yaml
-default_model: "gpt-4o"
+default_model: "gpt-4o-2024-08-06"
 models:
-  gpt-4o:
-    name: "gpt-4o"
+  gpt-4o-2024-08-06:
+    name: "gpt-4o-2024-08-06"
     provider: "openai"
-    max_tokens: 4096
+    max_tokens: 128000
     temperature: 0.7
-  claude-v1:
-    name: "claude-v1"
+  claude-3-5-sonnet-20240620:
+    name: "claude-3-5-sonnet-20240620"
     provider: "anthropic"
-    max_tokens: 8192
+    max_tokens: 200000
     temperature: 0.7
+
 rate_limit:
   limit: 150000
   time_frame: 300
+
 ```
 
 ## Quick Start

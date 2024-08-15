@@ -160,10 +160,10 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 2. Create a `config.yaml` file with the model configurations:
 
 ```yaml
-default_model: "gpt-3.5-turbo"
+default_model: "gpt-4o"
 models:
-  gpt-3.5-turbo:
-    name: "gpt-3.5-turbo"
+  gpt-4o:
+    name: "gpt-4o"
     provider: "openai"
     max_tokens: 4096
     temperature: 0.7

@@ -1,0 +1,15 @@
+default_model: "gpt-3.5-turbo"
+models:
+  gpt-3.5-turbo:
+    name: "gpt-3.5-turbo"
+    provider: "openai"
+    max_tokens: 4096
+    temperature: 0.7
+  claude-v1:
+    name: "claude-v1"
+    provider: "anthropic"
+    max_tokens: 8192
+    temperature: 0.7
+rate_limit:
+  limit: 150000
+  time_frame: 300

@@ -2,7 +2,6 @@
 
 <img src="https://github.com/user-attachments/assets/10f2da63-9893-46d5-a7b9-d138c834f5ac" alt="y2xsxh2k" width="200"/>
 
-
 > Unleash the power of AI to dissect, analyze, and transform your code.
 
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/release/python-370/)
@@ -125,19 +124,24 @@ You can also run ReverseEngineer using Docker, which ensures a consistent enviro
    cd ReverseEngineer
    ```
 
-2. Build the Docker image:
+2. Build the Docker image for Linux:
    ```bash
-   docker build -t reverseengineer .
+   docker build -f Dockerfile.linux -t reverseengineer:linux .
    ```
 
-3. Run the container:
+3. Build the Docker image for Windows:
    ```bash
-   docker run -it --rm -v $(pwd):/app reverseengineer
+   docker build -f Dockerfile.windows -t reverseengineer:windows .
+   ```
+
+4. Run the container for Linux:
+   ```bash
+   docker run -it --rm -v $(pwd):/app reverseengineer:linux
    ```
 
    On Windows, use this command instead:
    ```bash
-   docker run -it --rm -v %cd%:/app reverseengineer
+   docker run -it --rm -v %cd%:/app reverseengineer:windows
    ```
 
 This will start an interactive shell in the container where you can run ReverseEngineer commands.
@@ -237,19 +241,9 @@ The typical workflow is as follows:
 4. The code is sent to the language model with specific instructions.
 5. The model's response is processed and displayed or saved to a file.
 
-## Extending ReverseEngineer
-
-To add new functionalities:
-
-1. Add a new method to the `ReverseEngineer` class in `reverse_engineer_aider.py`.
-2. Create a new CLI command in the same file, following the existing pattern.
-3. Update the README to include information about the new functionality.
-
 ## Dependencies
 
-- [typer](https://
-
-typer.tiangolo.com/): For creating the command-line interface
+- [typer](https://typer.tiangolo.com/): For creating the command-line interface
 - [pydantic](https://pydantic-docs.helpmanual.io/): For data validation and settings management
 - [python-dotenv](https://github.com/theskumar/python-dotenv): For loading environment variables
 - [PyYAML](https://pyyaml.org/): For parsing YAML configuration files

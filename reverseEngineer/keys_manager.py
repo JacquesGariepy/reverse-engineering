@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class KeyManager:
     @staticmethod
-    def save_encrypted_key(provider: str, api_key: str):
+    def _save_encrypted_key(provider: str, api_key: str):
         """Save the API key securely using encryption."""
         key_path = os.path.expanduser(f"~/.{provider}_key")
         encryption_key = Fernet.generate_key()
@@ -18,7 +18,7 @@ class KeyManager:
             f.write(encryption_key + b'\\n' + encrypted_key)
     
     @staticmethod
-    def load_encrypted_key(provider: str) -> Optional[str]:
+    def _load_encrypted_key(provider: str) -> Optional[str]:
         """Load and decrypt the API key."""
         key_path = os.path.expanduser(f"~/.{provider}_key")
         if not os.path.exists(key_path):

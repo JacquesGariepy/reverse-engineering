@@ -79,7 +79,7 @@ git clone https://github.com/JacquesGariepy/reverse-engineering.git
 cd reverse-engineering
 
 # Create and activate a new conda environment
-conda create -n reverse-engineer python=3.9
+conda create -n reverse-engineer python
 conda activate reverse-engineer
 
 # Install dependencies

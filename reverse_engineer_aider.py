@@ -15,9 +15,7 @@ import logging
 from dotenv import load_dotenv
 import yaml
 from pydantic import BaseModel, Field
-from aider.coders import Coder
-from aider.models import Model
-from aider.io import InputOutput
+from aider import models, prompts, coders, io
 
 # Load environment variables
 load_dotenv()
@@ -76,23 +74,12 @@ class ReverseEngineer:
         self.rate_limit_state = {'tokens': 0, 'last_reset': time.time()}
 
         # Initialize aider components
-        self.io = InputOutput()
-        self.model = Model(model_name=self.default_model, api_key=os.getenv("OPENAI_API_KEY"))
-        self.coder = Coder(self.model, self.io)
+        self.io = io.InputOutput()
+        self.llms = self._initialize_llms()
+        self.coders = self._initialize_coders()
 
     def _load_config(self, config_path: str) -> Config:
-        """
-        Load configuration from a YAML file.
-
-        Args:
-            config_path (str): Path to the configuration file.
-
-        Returns:
-            Config: Parsed configuration object.
-
-        Raises:
-            ReverseEngineerError: If there's an issue loading the configuration.
-        """
+        """Load configuration from a YAML file."""
         try:
             with open(config_path, 'r') as f:
                 config_dict = yaml.safe_load(f)
@@ -101,12 +88,7 @@ class ReverseEngineer:
             raise ReverseEngineerError(f"Error loading configuration: {str(e)}")
 
     def _setup_api_keys(self):
-        """
-        Set up API keys for different providers.
-
-        This method checks environment variables for API keys and prompts the user
-        if they're not set.
-        """
+        """Set up API keys for different providers."""
         providers = set(model.provider for model in self.models.values())
         for provider in providers:
             env_var = f"{provider.upper()}_API_KEY"
@@ -120,6 +102,24 @@ class ReverseEngineer:
                     with open(os.path.expanduser(f"~/.{provider.lower()}_api_key"), "w") as f:
                         f.write(api_key)
 
+    def _initialize_llms(self):
+        """Initialize LLMs based on the configuration."""
+        llms = {}
+        for model_name, model_config in self.models.items():
+            llm_class = getattr(models, f"{model_config.provider.capitalize()}Model")
+            llms[model_name] = llm_class(
+                model_name=model_name,
+                api_key=os.getenv(f"{model_config.provider.upper()}_API_KEY"),
+                api_base=model_config.api_base,
+                temperature=model_config.temperature,
+                max_tokens=model_config.max_tokens
+            )
+        return llms
+
+    def _initialize_coders(self):
+        """Initialize coders for each LLM."""
+        return {model_name: coders.Coder(llm, self.io) for model_name, llm in self.llms.items()}
+
     @lru_cache(maxsize=100)
     def _get_completion(self, prompt: str, model_name: str) -> str:
         """
@@ -127,22 +127,13 @@ class ReverseEngineer:
 
         This method is cached to reduce redundant API calls. It also implements
         rate limiting and retry logic for robustness.
-
-        Args:
-            prompt (str): The prompt to send to the model.
-            model_name (str): The name of the model to use.
-
-        Returns:
-            str: The model's response.
-
-        Raises:
-            ReverseEngineerError: If there's an issue with the API call after retries.
         """
         max_retries = 3
         for attempt in range(max_retries):
             try:
                 self._check_rate_limit()
-                response = self.coder.complete(prompt)
+                coder = self.coders[model_name]
+                response = coder.complete(prompt)
                 self._update_rate_limit(len(response.split()))  # Approximation of token count
                 return response
             except Exception as e:
@@ -152,12 +143,7 @@ class ReverseEngineer:
                 time.sleep(2 ** attempt)  # Exponential backoff
 
     def _check_rate_limit(self):
-        """
-        Check if the current operation would exceed the rate limit.
-
-        Raises:
-            ReverseEngineerError: If the rate limit would be exceeded.
-        """
+        """Check if the current operation would exceed the rate limit."""
         current_time = time.time()
         if current_time - self.rate_limit_state['last_reset'] > self.rate_limit['time_frame']:
             self.rate_limit_state['tokens'] = 0
@@ -168,42 +154,18 @@ class ReverseEngineer:
             raise ReverseEngineerError(f"Rate limit exceeded. Please wait {wait_time:.2f} seconds before trying again.")
 
     def _update_rate_limit(self, tokens: int):
-        """
-        Update the rate limit counter.
-
-        Args:
-            tokens (int): The number of tokens used in the last operation.
-        """
+        """Update the rate limit counter."""
         self.rate_limit_state['tokens'] += tokens
 
     def read_file(self, file_path: str) -> str:
-        """
-        Read code from a local file or URL.
-
-        Args:
-            file_path (str): Path to the local file or URL.
-
-        Returns:
-            str: The contents of the file or URL.
-
-        Raises:
-            ReverseEngineerError: If there's an issue reading the file or URL.
-        """
+        """Read code from a local file or URL."""
         if self._is_url(file_path):
             return self._read_url(file_path)
         else:
             return self._read_local_file(file_path)
 
     def _is_url(self, path: str) -> bool:
-        """
-        Check if the given path is a URL.
-
-        Args:
-            path (str): The path to check.
-
-        Returns:
-            bool: True if the path is a URL, False otherwise.
-        """
+        """Check if the given path is a URL."""
         try:
             result = urlparse(path)
             return all([result.scheme, result.netloc])
@@ -211,18 +173,7 @@ class ReverseEngineer:
             return False
 
     def _read_local_file(self, file_path: str) -> str:
-        """
-        Read code from a local file.
-
-        Args:
-            file_path (str): Path to the local file.
-
-        Returns:
-            str: The contents of the file.
-
-        Raises:
-            ReverseEngineerError: If there's an issue reading the file.
-        """
+        """Read code from a local file."""
         try:
             with open(file_path, 'r') as file:
                 return file.read()
@@ -230,18 +181,7 @@ class ReverseEngineer:
             raise ReverseEngineerError(f"Error reading file: {str(e)}")
 
     def _read_url(self, url: str) -> str:
-        """
-        Read code from a URL.
-
-        Args:
-            url (str): The URL to read from.
-
-        Returns:
-            str: The contents of the URL.
-
-        Raises:
-            ReverseEngineerError: If there's an issue fetching the URL.
-        """
+        """Read code from a URL."""
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -253,79 +193,64 @@ class ReverseEngineer:
         """Analyze the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Analyze the following {language.value} code:\n\n{code}\n\nProvide a detailed analysis of its functionality, design choices, and interactions."
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def identify_issues(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Identify potential issues in the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Identify potential issues, vulnerabilities, or areas for improvement in the following {language.value} code:\n\n{code}"
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def optimize(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Suggest optimizations for the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Suggest improvements to optimize performance and security for the following {language.value} code:\n\n{code}"
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def generate_documentation(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Generate documentation for the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Generate comprehensive documentation for the following {language.value} code:\n\n{code}\n\nInclude function/method descriptions, parameters, return values, and overall purpose."
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def refactor(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Suggest refactoring improvements for the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Suggest refactoring improvements for the following {language.value} code to enhance readability, maintainability, and adherence to best practices:\n\n{code}"
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def explain_algorithm(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Explain the algorithm used in the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Explain the algorithm(s) used in the following {language.value} code in detail:\n\n{code}\n\nDescribe the approach, time complexity, and space complexity if applicable."
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def generate_test_cases(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Generate test cases for the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Generate comprehensive test cases for the following {language.value} code:\n\n{code}\n\nInclude normal cases, edge cases, and potential error scenarios."
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def identify_design_patterns(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Identify design patterns used in the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Identify and explain any design patterns used in the following {language.value} code:\n\n{code}\n\nDescribe how each pattern is implemented and its purpose in the code."
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def convert_language(self, code: str, from_language: Language, to_language: Language, model_name: Optional[str] = None) -> str:
         """Convert the given code from one programming language to another using aider."""
         model_name = model_name or self.default_model
         prompt = f"Convert the following {from_language.value} code to {to_language.value}:\n\n{code}\n\nEnsure that the functionality remains the same and adhere to the best practices of the target language."
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def security_audit(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Perform a security audit on the given code using aider."""
         model_name = model_name or self.default_model
         prompt = f"Perform a comprehensive security audit on the following {language.value} code:\n\n{code}\n\nIdentify potential security vulnerabilities, suggest fixes, and explain the implications of each issue."
-        return self.coder.complete(prompt)
+        return self._get_completion(prompt, model_name)
 
     def save_output(self, output: str, command: str, file: str, output_dir: str = "output", filename: Optional[str] = None):
-        """
-        Save the output to a file.
-
-        This method creates a directory if it doesn't exist, and handles file naming
-        including iterations and timestamps.
-
-        Args:
-            output (str): The content to save.
-            command (str): The command that generated the output.
-            file (str): The original input file.
-            output_dir (str): The directory to save the output in.
-            filename (Optional[str]): A specific filename to use.
-
-        Returns:
-            str: The full path of the saved file.
-        """
+        """Save the output to a file."""
         os.makedirs(output_dir, exist_ok=True)
         
         base_name = os.path.basename(file)

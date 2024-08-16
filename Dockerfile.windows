@@ -23,4 +23,4 @@ EXPOSE 8000
 ENV NAME ReverseEngineer
 
 # Définir la commande par défaut pour exécuter l'application
-CMD ["python", "reverse_engineer_aider.py"]
+CMD ["python", "cli.py"]

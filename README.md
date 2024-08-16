@@ -75,15 +75,15 @@ Our vision is to empower developers, researchers, and students with AI-assisted 
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone https://github.com/JacquesGariepy/reverse-engineering.git
+cd reverse-engineering
 
 # Create and activate a new conda environment
-conda create -n reverse-engineer python=3.9
+conda create -n reverse-engineer python
 conda activate reverse-engineer
 
 # Install dependencies
-conda install -c conda-forge typer pydantic python-dotenv pyyaml requests
+conda install -c conda-forge typer pydantic python-dotenv pyyaml requests aider fernet 
 pip install aider
 ```
 
@@ -91,8 +91,8 @@ pip install aider
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone https://github.com/JacquesGariepy/reverse-engineering.git
+cd reverse-engineering
 
 # Install dependencies using poetry
 poetry install
@@ -102,8 +102,8 @@ poetry install
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone https://github.com/JacquesGariepy/reverse-engineering.git
+cd reverse-engineering
 
 # Install dependencies
 pip install -r requirements.txt
@@ -185,16 +185,21 @@ After installation and configuration, you can start using ReverseEngineer right 
 
 ```bash
 # Initialize the tool
-python reverse_engineer_aider.py init
+python cli.py
 
 # Analyze a Python file
-python reverse_engineer_aider.py analyze --file path/to/your/code.py --language python
+python cli.py analyze --file "path/to/your/code.py" --language python
+
+# Interactive mode
+python cli.py
+   Enter a command (or 'exit' to quit): analyze --file "https://raw.githubusercontent.com/python/mypy/master/runtests.py"
+   Enter a command (or 'exit' to quit): analyze --file "c:\runtests.py"
 
 # Generate documentation for a JavaScript file
-python reverse_engineer_aider.py generate-documentation --file path/to/your/code.js --language javascript
+python reverse_engineer.py generate-documentation --file "path/to/your/code.js" --language javascript
 
 # Perform a security audit on a C++ file
-python reverse_engineer_aider.py security-audit --file path/to/your/code.cpp --language cpp
+python cli.py security-audit --file "path/to/your/code.cpp" --language cpp
 ```
 
 ## Usage Examples

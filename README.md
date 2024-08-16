@@ -88,7 +88,7 @@ conda create -n reverse-engineer python=3.9
 conda activate reverse-engineer
 
 # Install dependencies
-conda install -c conda-forge typer pydantic python-dotenv pyyaml requests aider fernet 
+conda install -c conda-forge typer pydantic python-dotenv pyyaml requests aider fernet types-requests mypy
 pip install aider
 ```
 

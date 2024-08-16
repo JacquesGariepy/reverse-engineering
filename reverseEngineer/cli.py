@@ -1,19 +1,35 @@
+import shlex
+from typing import Optional
 import typer
-from .reverse_engineer import ReverseEngineer, Language, ReverseEngineerError
+from reverse_engineer import ReverseEngineer, Language, ReverseEngineerError
+from utils import read_file, process_command
 
 app = typer.Typer()
 re_engine = None
 
+def ensure_initialized(config_path: Optional[str] = None):
+    global re_engine
+    if re_engine is None:
+        typer.echo("Initializing ReverseEngineer with configuration...")
+        try:
+            re_engine = ReverseEngineer(config_path)
+            typer.echo(f"ReverseEngineer initialized with configuration from {config_path or 'default location'}.")
+        except ReverseEngineerError as e:
+            typer.echo(f"Error initializing ReverseEngineer: {str(e)}", err=True)
+            raise typer.Exit(code=1)
+        
 @app.command()
 def init(config_path: str = typer.Option(None, help="Path to the configuration file")):
     """Initialize the ReverseEngineer tool with a configuration file."""
-    global re_engine
-    try:
-        re_engine = ReverseEngineer(config_path)
-        typer.echo(f"ReverseEngineer initialized with configuration from {config_path or 'default location'}")
-    except ReverseEngineerError as e:
-        typer.echo(f"Error initializing ReverseEngineer: {str(e)}", err=True)
-        raise typer.Exit(code=1)
+    ensure_initialized(config_path)
+
+@app.callback()
+def main(
+    ctx: typer.Context,
+    config_path: str = typer.Option(None, help="Path to the configuration file")
+):
+    """Global callback to ensure initialization."""
+    ensure_initialized(config_path)
 
 @app.command()
 def analyze(
@@ -109,7 +125,7 @@ def convert_language(
         raise typer.Exit(code=1)
     
     try:
-        code = re_engine.read_file(file)
+        code = read_file(file)
         result = re_engine.convert_language(code, from_language, to_language, model)
         if output:
             saved_path = re_engine.save_output(result, f"convert_{from_language.value}_to_{to_language.value}", file, filename=output)
@@ -132,21 +148,39 @@ def security_audit(
 
 def _run_command(command: str, file: str, language: Language, model: str, output: str):
     """Helper function to run commands with common logic."""
+    
     if not re_engine:
         typer.echo("Please run 'init' command first to initialize the ReverseEngineer tool.")
         raise typer.Exit(code=1)
     
     try:
-        code = re_engine.read_file(file)
+        code = read_file(file)
         result = getattr(re_engine, command)(code, language, model)
         if output:
             saved_path = re_engine.save_output(result, command, file, filename=output)
             typer.echo(f"Output saved to: {saved_path}")
         else:
             typer.echo(result)
+        interactive_mode()
     except ReverseEngineerError as e:
         typer.echo(f"Error during {command}: {str(e)}", err=True)
         raise typer.Exit(code=1)
 
+def interactive_mode():
+    while True:
+        command = input("Enter a command (or 'exit' to quit): ").strip()
+        if command.lower() in ["exit", "quit"]:
+            typer.echo("Exiting...")
+            break
+        try:
+            # Use shlex.split to handle quotes and spaces properly
+            args = process_command(command)
+            app(prog_name="", args=args)
+        except SystemExit as e:
+            # Handle Typer's SystemExit so the loop can continue
+            if e.code != 0:
+                typer.echo(f"Command failed with exit code {e.code}")
+
+
 if __name__ == "__main__":
-    app()
+    interactive_mode()

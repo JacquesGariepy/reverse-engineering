@@ -185,16 +185,21 @@ app = typer.Typer()
 re_engine = ReverseEngineer()
 
 def common_options(func):
-    func = typer.option("--file", help="Path to the file or URL containing the code")(func)
-    func = typer.option("--language", default=Language.UNKNOWN, help="Programming language of the code")(func)
-    func = typer.option("--model", help="Specific model to use for analysis")(func)
-    func = typer.option("--output", help="Name of the output file (optional)")(func)
-    return func
+    def wrapper(
+        file: str = typer.Option(..., help="Path to the file or URL containing the code"),
+        language: str = typer.Option("UNKNOWN", help="Programming language of the code"),
+        model: Optional[str] = typer.Option(None, help="Specific model to use for analysis"),
+        output: Optional[str] = typer.Option(None, help="Name of the output file (optional)")
+    ):
+        return func(file, language, model, output)
+    
+    return wrapper
 
 @app.command()
 @common_options
-def analyze(file: str, language: Language, model: Optional[str] = None, output: Optional[str] = None):
+def analyze(file: str, language: str, model: Optional[str] = None, output: Optional[str] = None):
     """Analyze the given code file."""
+    # Example code analysis logic
     code = re_engine.read_file(file)
     result = re_engine.analyze(code, language, model)
     if output:

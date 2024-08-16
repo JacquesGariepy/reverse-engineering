@@ -1,4 +1,6 @@
 import os
+import re
+import shlex
 import requests
 import logging
 from datetime import datetime
@@ -39,3 +41,23 @@ def _read_url(url: str) -> str:
     except requests.RequestException as e:
         logger.error(f"Error fetching URL: {e}")
         raise Exception(f"Error fetching URL: {str(e)}")
+
+def handle_windows_paths(command):
+    # Regex to match quoted paths with backslashes
+    path_pattern = r'"([^"]*(\\\s+[^"]*)*)"'
+    
+    def replace_backslashes(match):
+        # Replace backslashes with forward slashes in the matched path
+        return '"' + match.group(1).replace('\\', '/') + '"'
+    
+    # Replace backslashes with forward slashes in quoted paths
+    processed_command = re.sub(path_pattern, replace_backslashes, command)
+    
+    return processed_command
+
+def process_command(command):
+    # Pre-process the command to handle Windows paths
+    processed_command = handle_windows_paths(command)
+    
+    # Use shlex.split() on the processed command
+    return shlex.split(processed_command)

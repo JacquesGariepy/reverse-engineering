@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "reverseengineer"
+version = "0.0.1"
+description = "A LLM-powered tool for code analysis and manipulation"
+authors = ["Jacques Gariépy <jacques.gariepy@outlook.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+typer = "0.12.3"
+pydantic = "2.8.2"
+python-dotenv = "1.0.1"
+PyYAML = "6.0.2"
+requests = "2.32.3"
+aider = "0.2.6"
+cryptography = "42.0.5"
+types-requests = "2.32.0.20240712"
+colorama = {version = "0.4.6", optional = true}
+rich = {version = "13.3.5", optional = true}
+[tool.poetry.dev-dependencies]
+mypy = "^1.4.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

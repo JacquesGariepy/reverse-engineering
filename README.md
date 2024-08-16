@@ -114,35 +114,76 @@ cd reverse-engineering
 pip install -r requirements.txt
 ```
 
-### Option 4: Using Docker
+## Option 4: Docker Usage
 
-You can also run ReverseEngineer using Docker, which ensures a consistent environment across different platforms.
+ReverseEngineer can be easily containerized and run using Docker and Docker Compose. We provide separate configurations for Windows and Linux environments.
 
-#### Prerequisites
-- [Docker](https://www.docker.com/get-started) installed on your system
+### Prerequisites
 
-#### Steps
+- Docker installed on your system
+- Docker Compose installed on your system
 
-1. Clone the repository:
+### Running with Docker Compose
+
+#### For Linux:
+
+1. Ensure you are in the project root directory.
+2. Run the following command:
+
+```bash
+docker-compose -f docker-compose_linux.yml up --build
+```
+
+#### For Windows:
+
+1. Ensure you are in the project root directory.
+2. Run the following command:
+
+```bash
+docker-compose -f docker-compose_windows.yml up --build
+```
+
+These commands will build the Docker image (if not already built) and start the ReverseEngineer container. The `--build` flag ensures that the image is rebuilt if there have been any changes.
+
+### Interacting with the Containerized Application
+
+Once the container is running, you can interact with ReverseEngineer in two ways:
+
+1. **Direct CLI Interaction**: If you've set up the Dockerfile to run the CLI by default, you can interact directly with the running container:
+
    ```bash
-   git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-   cd ReverseEngineer
+   docker exec -it reverseengineer python cli.py
    ```
 
-2. Build the Docker image:
+2. **SSH into the Container**: For more flexibility, you can SSH into the running container:
+
    ```bash
-   docker build -t reverseengineer .
+   docker exec -it reverseengineer /bin/bash
    ```
 
-3. Run the container:
+   Then, once inside the container, you can run ReverseEngineer commands as usual:
+
    ```bash
-   docker run -it --rm -v $(pwd):/app reverseengineer
+   python cli.py analyze --file "path/to/your/code.py" --language python
    ```
 
-   On Windows, use this command instead:
-   ```bash
-   docker run -it --rm -v %cd%:/app reverseengineer
-   ```
+### Stopping the Container
+
+To stop and remove the containers, networks, and volumes associated with the ReverseEngineer application, use:
+
+For Linux:
+```bash
+docker-compose -f docker-compose_linux.yml down
+```
+
+For Windows:
+```bash
+docker-compose -f docker-compose_windows.yml down
+```
+
+### Note on Persistence
+
+If you've configured volumes in your Docker Compose files, your data and configurations will persist between container restarts. Make sure to check the volume configurations in your `docker-compose_linux.yml` and `docker-compose_windows.yml` files to understand what data is being persisted and where.
 
 This will start an interactive shell in the container where you can run ReverseEngineer commands.
 

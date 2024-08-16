@@ -16,10 +16,13 @@ ReverseEngineer is a cutting-edge tool that leverages the power of Large Languag
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Quick Start](#quick-start)
+- [Usage](#usage)
+  - [CLI Usage](#cli-usage)
+  - [Direct Usage](#direct-usage)
 - [Usage Examples](#usage-examples)
 - [How It Works](#how-it-works)
-- [Extending ReverseEngineer](#extending-reverseengineer)
 - [Dependencies](#dependencies)
+- [Extending ReverseEngineer](#extending-reverseengineer)
 - [Contributing](#contributing)
 - [Roadmap](#roadmap)
 - [Community](#community)
@@ -48,6 +51,8 @@ ReverseEngineer is a cutting-edge tool that leverages the power of Large Languag
 🧠 **Algorithm Explanation**: Demystify complex algorithms with clear, concise explanations.
 
 🔄 **Code Translation**: Seamlessly convert code between different programming languages.
+
+🌐 **Remote Code Analysis**: Analyze code directly from URLs, including GitHub repositories.
 
 ## Motivation
 
@@ -79,7 +84,7 @@ git clone https://github.com/JacquesGariepy/reverse-engineering.git
 cd reverse-engineering
 
 # Create and activate a new conda environment
-conda create -n reverse-engineer python
+conda create -n reverse-engineer python=3.9
 conda activate reverse-engineer
 
 # Install dependencies
@@ -124,24 +129,19 @@ You can also run ReverseEngineer using Docker, which ensures a consistent enviro
    cd ReverseEngineer
    ```
 
-2. Build the Docker image for Linux:
+2. Build the Docker image:
    ```bash
-   docker build -f Dockerfile.linux -t reverseengineer:linux .
+   docker build -t reverseengineer .
    ```
 
-3. Build the Docker image for Windows:
+3. Run the container:
    ```bash
-   docker build -f Dockerfile.windows -t reverseengineer:windows .
-   ```
-
-4. Run the container for Linux:
-   ```bash
-   docker run -it --rm -v $(pwd):/app reverseengineer:linux
+   docker run -it --rm -v $(pwd):/app reverseengineer
    ```
 
    On Windows, use this command instead:
    ```bash
-   docker run -it --rm -v %cd%:/app reverseengineer:windows
+   docker run -it --rm -v %cd%:/app reverseengineer
    ```
 
 This will start an interactive shell in the container where you can run ReverseEngineer commands.
@@ -154,29 +154,21 @@ Note: The `-v $(pwd):/app` flag mounts your current directory to the `/app` dire
 
 ```
 OPENAI_API_KEY=your_openai_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ```
 
 2. Create a `config.yaml` file with the model configurations:
 
 ```yaml
-default_model: "gpt-4o-2024-08-06"
+default_model: "gpt-4o"
 models:
-  gpt-4o-2024-08-06:
-    name: "gpt-4o-2024-08-06"
-    provider: "openai"
-    max_tokens: 128000
-    temperature: 0.7
-  claude-3-5-sonnet-20240620:
-    name: "claude-3-5-sonnet-20240620"
-    provider: "anthropic"
-    max_tokens: 200000
-    temperature: 0.7
-
+  gpt-4o:
+    name: "gpt-4o"
+    provider: "OPENAI"
+    max_tokens: 8192
+    temperature: 0.1
 rate_limit:
   limit: 150000
   time_frame: 300
-
 ```
 
 ## Quick Start
@@ -185,61 +177,116 @@ After installation and configuration, you can start using ReverseEngineer right 
 
 ```bash
 # Initialize the tool
-python cli.py
+python cli.py init
 
 # Analyze a Python file
 python cli.py analyze --file "path/to/your/code.py" --language python
 
+# Analyze code from a URL
+python cli.py analyze --file "https://raw.githubusercontent.com/python/cpython/main/Lib/asyncio/base_events.py" --language python
+
 # Interactive mode
 python cli.py
-   Enter a command (or 'exit' to quit): analyze --file "https://raw.githubusercontent.com/python/mypy/master/runtests.py"
-   Enter a command (or 'exit' to quit): analyze --file "c:\runtests.py"
+Enter a command (or 'exit' to quit): analyze --file "https://raw.githubusercontent.com/python/mypy/master/runtests.py" --language python
+```
 
+## Usage
+
+### CLI Usage
+
+```bash
 # Generate documentation for a JavaScript file
-python reverse_engineer.py generate-documentation --file "path/to/your/code.js" --language javascript
+python cli.py generate-documentation --file "path/to/your/code.js" --language javascript
 
 # Perform a security audit on a C++ file
 python cli.py security-audit --file "path/to/your/code.cpp" --language cpp
 ```
 
+### Direct Usage
+
+You can also use the `ReverseEngineer` class directly in your Python scripts:
+
+```python
+from reverse_engineer import ReverseEngineer, Language
+
+# Initialize the ReverseEngineer
+re = ReverseEngineer()
+
+# Analyze code
+code = """
+def fibonacci(n):
+    if n <= 1:
+        return n
+    else:
+        return fibonacci(n-1) + fibonacci(n-2)
+"""
+result = re.analyze(code, Language.PYTHON)
+print(result)
+
+# Analyze code from a URL
+import requests
+url = "https://raw.githubusercontent.com/python/cpython/main/Lib/asyncio/base_events.py"
+code = requests.get(url).text
+result = re.analyze(code, Language.PYTHON)
+print(result)
+```
+
 ## Usage Examples
 
-### Code Analysis
+### Continuous Mode
+
+In this mode, you execute commands directly without entering the interactive mode.
+
+1. Code Analysis:
+```bash
+python cli.py analyze --file "https://raw.githubusercontent.com/django/django/main/django/core/handlers/base.py" --language python
+```
+
+2. Security Audit:
+```bash
+python cli.py security-audit --file "https://raw.githubusercontent.com/php/php-src/master/ext/session/session.c" --language c
+```
+
+3. Generate Documentation:
+```bash
+python cli.py generate-documentation --file "https://raw.githubusercontent.com/facebook/react/main/packages/react/src/React.js" --language javascript
+```
+
+4. Optimize Python Code:
+```bash
+python cli.py optimize --file "https://gist.githubusercontent.com/user/123456789abcdef/raw/example.py" --language python
+```
+
+5. Identify Design Patterns:
+```bash
+python cli.py identify-design-patterns --file "https://bitbucket.org/atlassian/aui/raw/master/src/main/java/com/atlassian/aui/AuiContext.java" --language java
+```
+
+6. Explain Algorithm:
+```bash
+python cli.py explain-algorithm --file "https://gitlab.com/-/snippets/123456789/raw/main/algorithm.py" --language python
+```
+
+### Interactive Mode
+
+In this mode, you first enter the interactive interface, then input your commands one by one.
 
 ```bash
-python reverse_engineer_aider.py analyze --file complex_algorithm.py --language python
+python cli.py
+Enter a command (or 'exit' to quit): analyze --file "https://raw.githubusercontent.com/django/django/main/django/core/handlers/base.py" --language python
+Enter a command (or 'exit' to quit): security-audit --file "https://raw.githubusercontent.com/php/php-src/master/ext/session/session.c" --language c
+Enter a command (or 'exit' to quit): generate-documentation --file "https://raw.githubusercontent.com/facebook/react/main/packages/react/src/React.js" --language javascript
+Enter a command (or 'exit' to quit): optimize --file "https://gist.githubusercontent.com/user/123456789abcdef/raw/example.py" --language python
+Enter a command (or 'exit' to quit): identify-design-patterns --file "https://bitbucket.org/atlassian/aui/raw/master/src/main/java/com/atlassian/aui/AuiContext.java" --language java
+Enter a command (or 'exit' to quit): explain-algorithm --file "https://gitlab.com/-/snippets/123456789/raw/main/algorithm.py" --language python
+Enter a command (or 'exit' to quit): exit
 ```
 
-Output:
-```
-Analysis of complex_algorithm.py:
-1. The file implements a graph traversal algorithm using depth-first search.
-2. Key functions:
-   - create_graph(): Initializes the graph structure
-   - dfs(graph, start, visited=None): Performs the depth-first search
-3. Time complexity: O(V + E), where V is the number of vertices and E is the number of edges.
-4. Space complexity: O(V) for the visited set and recursion stack.
-5. Potential optimization: Consider using an iterative approach to reduce stack overflow risk for large graphs.
-```
-
-### Security Audit
-
-```bash
-python reverse_engineer_aider.py security-audit --file login_system.php --language php
-```
-
-Output:
-```
-Security Audit Results for login_system.php:
-1. [HIGH] SQL Injection vulnerability detected on line 23. Use prepared statements instead of string concatenation.
-2. [MEDIUM] Weak password hashing algorithm (MD5) used. Recommend switching to bcrypt or Argon2.
-3. [LOW] Session ID is not regenerated after login, potentially allowing session fixation attacks.
-4. [INFO] Consider implementing rate limiting to prevent brute force attacks.
-```
+These examples demonstrate how to use ReverseEngineer in both continuous and interactive modes. Continuous mode is useful for scripts or integration with other tools, while interactive mode is convenient for exploration and iterative analysis.
 
 ## How It Works
 
-ReverseEngineer uses the `aider` library to interact with different language models. It loads the configuration from a YAML file and environment variables, initializes the appropriate models, and uses a command-line interface (CLI) based on `typer` to expose its functionalities.
+ReverseEngineer uses the `aider` library to interact with language models. It loads the configuration from a YAML file and environment variables, initializes the appropriate models, and uses a command-line interface (CLI) based on `typer` to expose its functionalities.
 
 The typical workflow is as follows:
 1. The user initializes the tool with a configuration.
@@ -256,6 +303,10 @@ The typical workflow is as follows:
 - [PyYAML](https://pyyaml.org/): For parsing YAML configuration files
 - [requests](https://docs.python-requests.org/en/master/): For making HTTP requests
 - [aider](https://github.com/paul-gauthier/aider): For interacting with language models
+
+## Extending ReverseEngineer
+
+ReverseEngineer is designed to be easily extensible. You can add new analysis types, support for additional programming languages, or integrate with other tools. Check out our [Developer Guide](DEVELOPER_GUIDE.md) for more information on how to extend ReverseEngineer.
 
 ## Contributing
 

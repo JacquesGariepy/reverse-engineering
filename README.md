@@ -185,16 +185,21 @@ After installation and configuration, you can start using ReverseEngineer right 
 
 ```bash
 # Initialize the tool
-python reverse_engineer_aider.py init
+python cli.py
 
 # Analyze a Python file
-python reverse_engineer_aider.py analyze --file path/to/your/code.py --language python
+python cli.py analyze --file "path/to/your/code.py" --language python
+
+# Interactive mode
+python cli.py
+   Enter a command (or 'exit' to quit): analyze --file "https://raw.githubusercontent.com/python/mypy/master/runtests.py"
+   Enter a command (or 'exit' to quit): analyze --file "c:\runtests.py"
 
 # Generate documentation for a JavaScript file
-python reverse_engineer_aider.py generate-documentation --file path/to/your/code.js --language javascript
+python reverse_engineer.py generate-documentation --file "path/to/your/code.js" --language javascript
 
 # Perform a security audit on a C++ file
-python reverse_engineer_aider.py security-audit --file path/to/your/code.cpp --language cpp
+python cli.py security-audit --file "path/to/your/code.cpp" --language cpp
 ```
 
 ## Usage Examples

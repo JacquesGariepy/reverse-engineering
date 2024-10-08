@@ -1,4 +1,4 @@
-# ReverseEngineer 🧠💻
+# reverse-engineering 🧠💻
 
 <img src="https://github.com/user-attachments/assets/10f2da63-9893-46d5-a7b9-d138c834f5ac" alt="y2xsxh2k" width="200"/>
 
@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-ReverseEngineer is a cutting-edge tool that leverages the power of Large Language Models (LLMs) to revolutionize the way developers analyze, understand, and manipulate code. Whether you're diving into legacy systems, optimizing performance, or learning new programming paradigms, ReverseEngineer is your AI-powered companion in the world of software engineering.
+reverse-engineering is a cutting-edge tool that leverages the power of Large Language Models (LLMs) to revolutionize the way developers analyze, understand, and manipulate code. Whether you're diving into legacy systems, optimizing performance, or learning new programming paradigms, reverse-engineering is your AI-powered companion in the world of software engineering.
 
 ## Table of Contents
 - [Features](#features)
@@ -18,7 +18,7 @@ ReverseEngineer is a cutting-edge tool that leverages the power of Large Languag
 - [Quick Start](#quick-start)
 - [Usage Examples](#usage-examples)
 - [How It Works](#how-it-works)
-- [Extending ReverseEngineer](#extending-reverseengineer)
+- [Extending reverse-engineering](#extending-reverse-engineering)
 - [Dependencies](#dependencies)
 - [Contributing](#contributing)
 - [Roadmap](#roadmap)
@@ -53,7 +53,7 @@ ReverseEngineer is a cutting-edge tool that leverages the power of Large Languag
 
 In today's fast-paced software development world, understanding and maintaining code is more crucial than ever. Whether you're a seasoned developer diving into a legacy codebase, a security researcher analyzing potential vulnerabilities, or a student learning the intricacies of algorithm design, the ability to quickly grasp and manipulate code is invaluable.
 
-ReverseEngineer was born out of the need to make this process faster, more efficient, and more accessible. By harnessing the power of advanced language models, we've created a tool that can:
+reverse-engineering was born out of the need to make this process faster, more efficient, and more accessible. By harnessing the power of advanced language models, we've created a tool that can:
 
 - Reduce the time spent on code comprehension by up to 60%
 - Identify potential bugs and security issues with 85% accuracy
@@ -75,8 +75,8 @@ Our vision is to empower developers, researchers, and students with AI-assisted 
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone https://github.com/JacquesGariepy/reverse-engineering.git
+cd reverse-engineering
 
 # Create and activate a new conda environment
 conda create -n reverse-engineer python=3.9
@@ -91,8 +91,8 @@ pip install aider
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone https://github.com/JacquesGariepy/reverse-engineering.git
+cd reverse-engineering
 
 # Install dependencies using poetry
 poetry install
@@ -102,8 +102,8 @@ poetry install
 
 ```bash
 # Clone the repository
-git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-cd ReverseEngineer
+git clone https://github.com/JacquesGariepy/reverse-engineering.git
+cd reverse-engineering
 
 # Install dependencies
 pip install -r requirements.txt
@@ -111,7 +111,7 @@ pip install -r requirements.txt
 
 ### Option 4: Using Docker
 
-You can also run ReverseEngineer using Docker, which ensures a consistent environment across different platforms.
+You can also run reverse-engineering using Docker, which ensures a consistent environment across different platforms.
 
 #### Prerequisites
 - [Docker](https://www.docker.com/get-started) installed on your system
@@ -120,31 +120,31 @@ You can also run ReverseEngineer using Docker, which ensures a consistent enviro
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/JacquesGariepy/ReverseEngineer.git
-   cd ReverseEngineer
+   git clone https://github.com/JacquesGariepy/reverse-engineering.git
+   cd reverse-engineering
    ```
 
 2. Build the Docker image for Linux:
    ```bash
-   docker build -f Dockerfile.linux -t reverseengineer:linux .
+   docker build -f Dockerfile.linux -t reverse-engineering:linux .
    ```
 
 3. Build the Docker image for Windows:
    ```bash
-   docker build -f Dockerfile.windows -t reverseengineer:windows .
+   docker build -f Dockerfile.windows -t reverse-engineering:windows .
    ```
 
 4. Run the container for Linux:
    ```bash
-   docker run -it --rm -v $(pwd):/app reverseengineer:linux
+   docker run -it --rm -v $(pwd):/app reverse-engineering:linux
    ```
 
    On Windows, use this command instead:
    ```bash
-   docker run -it --rm -v %cd%:/app reverseengineer:windows
+   docker run -it --rm -v %cd%:/app reverse-engineering:windows
    ```
 
-This will start an interactive shell in the container where you can run ReverseEngineer commands.
+This will start an interactive shell in the container where you can run reverse-engineering commands.
 
 Note: The `-v $(pwd):/app` flag mounts your current directory to the `/app` directory in the container, allowing you to analyze local files.
 
@@ -181,7 +181,7 @@ rate_limit:
 
 ## Quick Start
 
-After installation and configuration, you can start using ReverseEngineer right away:
+After installation and configuration, you can start using reverse-engineering right away:
 
 ```bash
 # Initialize the tool
@@ -234,7 +234,7 @@ Security Audit Results for login_system.php:
 
 ## How It Works
 
-ReverseEngineer uses the `aider` library to interact with different language models. It loads the configuration from a YAML file and environment variables, initializes the appropriate models, and uses a command-line interface (CLI) based on `typer` to expose its functionalities.
+reverse-engineering uses the `aider` library to interact with different language models. It loads the configuration from a YAML file and environment variables, initializes the appropriate models, and uses a command-line interface (CLI) based on `typer` to expose its functionalities.
 
 The typical workflow is as follows:
 1. The user initializes the tool with a configuration.
@@ -258,7 +258,7 @@ We welcome contributions from the community! Whether it's adding new features, i
 
 ## Roadmap
 
-We're continuously working to improve ReverseEngineer. Here's what we have planned for the future:
+We're continuously working to improve reverse-engineering. Here's what we have planned for the future:
 
 - [ ] Integration with popular IDEs (VSCode, PyCharm)
 - [ ] Support for more programming languages
@@ -268,11 +268,11 @@ We're continuously working to improve ReverseEngineer. Here's what we have plann
 
 ## Community
 
-Join our community to discuss ReverseEngineer, share your experiences, and get help:
+Join our community to discuss reverse-engineering, share your experiences, and get help:
 
-- [Discord Server](https://discord.gg/reverseengineer)
-- [Reddit Community](https://www.reddit.com/r/ReverseEngineerAI)
-- [Twitter](https://twitter.com/ReverseEngineerAI)
+- [Discord Server](https://discord.gg/reverse-engineering)
+- [Reddit Community](https://www.reddit.com/r/reverse-engineeringAI)
+- [Twitter](https://twitter.com/reverse-engineeringAI)
 
 ## License
 
@@ -285,21 +285,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Citation
 
-If you use ReverseEngineer in your research or project, please cite it as follows:
+If you use reverse-engineering in your research or project, please cite it as follows:
 
 ```
-@software{ReverseEngineer,
+@software{reverse-engineering,
   author = {Jacques Gariépy},
-  title = {ReverseEngineer: A LLM-powered tool for code analysis and manipulation},
+  title = {reverse-engineering: A LLM-powered tool for code analysis and manipulation},
   year = {2024},
-  url = {https://github.com/JacquesGariepy/ReverseEngineer}
+  url = {https://github.com/JacquesGariepy/reverse-engineering}
 }
 ```
 
 ---
 
 <p align="center">
-  Made with ❤️ by the ReverseEngineer Team
+  Made with ❤️ by the reverse-engineering Team
 </p>
 
 <p align="center">

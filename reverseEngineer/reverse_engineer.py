@@ -1,3 +1,5 @@
+#reverse_engineer.py
+
 import os
 import sys
 from typing import Dict, Any, Optional, List, Union
@@ -17,8 +19,10 @@ import yaml
 from pydantic import BaseModel, Field
 from aider import models, prompts, coders, io
 from cryptography.fernet import Fernet  # Added for encryption
-from .config import Config
-from .exceptions import ReverseEngineerError
+from config import Config
+from exceptions import ReverseEngineerError
+from keys_manager import KeysManager
+from llm_manager import LLMManager
 
 # Load environment variables
 load_dotenv()
@@ -54,17 +58,16 @@ class ReverseEngineer:
         self.default_model = self.config.default_model
         self.models = self.config.models
         self.rate_limit = self.config.rate_limit
-
+        self.keys_manager = KeysManager()
         # Set up API keys for different providers
-        self._setup_api_keys()
+        self.setup_api_keys()
 
         # Initialize rate limiting
         self.rate_limit_state = {'tokens': 0, 'last_reset': time.time()}
 
         # Initialize aider components
         self.io = io.InputOutput()
-        self.llms = self._initialize_llms()
-        self.coders = self._initialize_coders()
+        self.llm_manager = LLMManager(self.config)
 
     def _load_config(self, config_path: str) -> Config:
         """Load configuration from a YAML file."""
@@ -75,6 +78,25 @@ class ReverseEngineer:
         except Exception as e:
             logger.error(f"Failed to load configuration: {e}")
             raise ReverseEngineerError(f"Error loading configuration: {str(e)}")
+        
+    def setup_api_keys(self):
+        """Set up API keys for different providers."""
+        providers = set(model.provider for model in self.models.values())
+        for provider in providers:
+            env_var = f"{provider.upper()}_API_KEY"
+            api_key = self.keys_manager._load_encrypted_key(provider.lower())
+    
+            if not api_key:  # If no saved key was found, ask the user
+                api_key = os.getenv(env_var)
+                if not api_key:
+                    api_key = self.io.input(f"Please enter your {provider} API key: ", password=True)
+                    os.environ[env_var] = api_key
+                    
+                    save_key = self.io.confirm(f"Do you want to save this {provider} API key for future sessions?")
+                    if save_key:
+                        self.keys_manager._save_encrypted_key(provider.lower(), api_key)
+            else:
+                os.environ[env_var] = api_key
 
     def _check_rate_limit(self):
         """Check if the current operation would exceed the rate limit."""
@@ -103,8 +125,8 @@ class ReverseEngineer:
         for attempt in range(max_retries):
             try:
                 self._check_rate_limit()
-                coder = self.coders[model_name]
-                response = coder.complete(prompt)
+                self.coder = self.llm_manager.coders[model_name]
+                response = self.coder.run(prompt)
                 self._update_rate_limit(len(response.split()))  # Approximation of token count
                 return response
             except Exception as e:

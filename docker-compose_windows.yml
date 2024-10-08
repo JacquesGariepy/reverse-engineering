@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  reverseengineer:
+    build:
+      context: .
+      dockerfile: Dockerfile.windows
+    image: reverseengineer:latest
+    container_name: reverseengineer
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    command: python cli.py
+
+volumes:
+  reverseengineer_data:
+
+networks:
+  reverseengineer_network:
+    driver: nat

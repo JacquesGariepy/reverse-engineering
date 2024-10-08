@@ -1,5 +1,5 @@
-
-# Expose key classes and modules for easier access when importing the package
+#__init__.py
+# init file
 
 from .reverse_engineer import ReverseEngineer
 from .exceptions import ReverseEngineerError
@@ -11,7 +11,7 @@ from .utils import (
     _read_url
 )
 from .llm_manager import LLMManager
-from .keys_manager import KeyManager
+from .keys_manager import KeysManager
 
 __all__ = [
     "ReverseEngineer",
@@ -23,7 +23,7 @@ __all__ = [
     "_read_local_file",
     "_read_url",
     "LLMManager",
-    "KeyManager"
+    "KeysManager"
 ]
 
 # Version of the reverse_engineer package

@@ -10,3 +10,6 @@ mypy==1.11.1
 # Optional dependencies for enhanced functionality
 colorama==0.4.6  # For colored terminal output
 rich==13.3.5  # For rich text and beautiful formatting in the terminal
+prompt_toolkit
+litellm
+backoff

@@ -185,16 +185,16 @@ After installation and configuration, you can start using reverse-engineering ri
 
 ```bash
 # Initialize the tool
-python reverse_engineer_aider.py init
+python cli.py init
 
 # Analyze a Python file
-python reverse_engineer_aider.py analyze --file path/to/your/code.py --language python
+python cli.py analyze --file path/to/your/code.py --language python
 
 # Generate documentation for a JavaScript file
-python reverse_engineer_aider.py generate-documentation --file path/to/your/code.js --language javascript
+python cli.py generate-documentation --file path/to/your/code.js --language javascript
 
 # Perform a security audit on a C++ file
-python reverse_engineer_aider.py security-audit --file path/to/your/code.cpp --language cpp
+python cli.py security-audit --file path/to/your/code.cpp --language cpp
 ```
 
 ## Usage Examples
@@ -202,7 +202,7 @@ python reverse_engineer_aider.py security-audit --file path/to/your/code.cpp --l
 ### Code Analysis
 
 ```bash
-python reverse_engineer_aider.py analyze --file complex_algorithm.py --language python
+python cli.py analyze --file complex_algorithm.py --language python
 ```
 
 Output:
@@ -220,7 +220,7 @@ Analysis of complex_algorithm.py:
 ### Security Audit
 
 ```bash
-python reverse_engineer_aider.py security-audit --file login_system.php --language php
+python cli.py security-audit --file login_system.php --language php
 ```
 
 Output:
@@ -230,6 +230,49 @@ Security Audit Results for login_system.php:
 2. [MEDIUM] Weak password hashing algorithm (MD5) used. Recommend switching to bcrypt or Argon2.
 3. [LOW] Session ID is not regenerated after login, potentially allowing session fixation attacks.
 4. [INFO] Consider implementing rate limiting to prevent brute force attacks.
+```
+
+# Terminal Commands for cli.py
+
+```bash
+# Initialize the ReverseEngineer tool with default config
+python cli.py init
+
+# Initialize the ReverseEngineer tool
+python cli.py init --config-path /path/to/config.json
+
+# Analyze the specified code file
+python cli.py analyze --file path/to/file.py --language python --model specific_model --output analysis_result.txt
+
+# Identify issues in the specified code file
+python cli.py identify-issues --file path/to/file.js --language javascript --model specific_model --output issues_report.txt
+
+# Suggest optimizations for the specified code file
+python cli.py optimize --file path/to/script.py --language python --model specific_model --output optimizations.txt
+
+# Generate documentation for the specified code file
+python cli.py generate-documentation --file path/to/main.cpp --language cpp --model specific_model --output documentation.md
+
+# Suggest refactoring improvements for the specified code file
+python cli.py refactor --file path/to/app.rb --language ruby --model specific_model --output refactoring_suggestions.txt
+
+# Explain the algorithm used in the specified code file
+python cli.py explain-algorithm --file path/to/algo.py --language python --model specific_model --output algorithm_explanation.txt
+
+# Generate test cases for the specified code file
+python cli.py generate-test-cases --file path/to/module.py --language python --model specific_model --output test_cases.py
+
+# Identify design patterns used in the specified code file
+python cli.py identify-design-patterns --file path/to/system.cpp --language cpp --model specific_model --output patterns_used.txt
+
+# Convert the code from one programming language to another
+python cli.py convert-language --file path/to/script.py --from-language python --to-language javascript --model specific_model --output converted.js
+
+# Perform a security audit on the specified code file
+python cli.py security-audit --file path/to/webapp.js --language javascript --model specific_model --output security_report.txt
+
+# Enter interactive mode
+python cli.py
 ```
 
 ## How It Works

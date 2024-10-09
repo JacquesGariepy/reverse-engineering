@@ -157,10 +157,13 @@ After installation and configuration, you can start using **reverse-engineering*
 
 ```bash
 # Initialize the tool
-python cli.py init
+python .\reverseEngineer\cli.py init
 
 # Analyze a Python file
-python cli.py analyze --file path/to/your/code.py --language python
+analyze --file "C:\Temp\test\mycode.py" --language python --test-file "test_mycode.py"
+
+# Refactoring
+refactor --file "C:\Temp\test\mycode.py" --language python --test-file "test_mycode.py"
 
 # Generate documentation for a JavaScript file
 python cli.py generate-documentation --file path/to/your/code.js --language javascript

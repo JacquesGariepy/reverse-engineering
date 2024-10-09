@@ -1,8 +1,10 @@
 #reverse_engineer.py
 
+import math
 import os
 import sys
 from typing import Dict, Any, Optional, List, Union
+import autogen
 import requests
 from urllib.parse import urlparse
 import typer
@@ -23,6 +25,7 @@ from config import Config
 from exceptions import ReverseEngineerError
 from keys_manager import KeysManager
 from llm_manager import LLMManager
+from static_analysis import StaticAnalyzer
 
 # Load environment variables
 load_dotenv()
@@ -113,20 +116,117 @@ class ReverseEngineer:
         """Update the rate limit counter."""
         self.rate_limit_state['tokens'] += tokens
 
-    @lru_cache(maxsize=100)
+    def analyze(self, file_path: str, code: str, language: str, model_name: Optional[str] = None, test_file_name: Optional[str] = None) -> str:
+        """
+        Analyze the code file using Aider and provide detailed recommendations based on static analysis.
+
+        This function identifies issues using StaticAnalyzer and generates a prompt containing detailed
+        recommendations for each issue, as well as optionally generating test cases based on the provided test file.
+
+        Args:
+            file_path: The path to the file containing the code to analyze (not the content of the code).
+            code: The code to analyze.
+            test_file_name: The name of the test file associated with the code (optional).
+            language: The programming language of the code being analyzed.
+            model_name: (Optional) The name of the model to use for LLM interactions.
+
+        Returns:
+            str: A string containing the detailed analysis and refactoring recommendations.
+        """
+        model_name = model_name or self.default_model
+
+        # Step 1: Perform static analysis using StaticAnalyzer
+        static_analyzer = StaticAnalyzer(file_path, code, test_file_name)
+        issues = static_analyzer.analyze()
+
+        # Step 2: Break down code into smaller chunks for multi-turn communication if necessary
+        code_chunks = self._split_code_into_chunks(code)
+
+        # Step 3 and 4: Construct the analysis prompt and include optional test generation instructions
+        full_prompt = (
+            f"Analyze the following source code written in {language}. The following issues were detected "
+            f"during static analysis: {issues}. Please provide a detailed analysis of the identified issues " 
+            f"along with specific recommendations for fixing them. Include a relevant code snippet for each "
+            f"recommendation to demonstrate the solution. Do not include the original source code in your "
+            f"response—focus solely on offering advice, solutions, and examples so the developer can make the corrections independently."
+        )
+
+        # If a test file is provided, include test generation instructions
+        if test_file_name:
+            full_prompt += (
+                f"\n\nAdditionally, generate appropriate unit tests for the code based on the provided test file "
+                f"'{test_file_name}'. Ensure the tests cover the refactored functionality, edge cases, and are structured "
+                f"to follow best practices in testing."
+            )
+
+        # Step 5: Communicate with Aider incrementally over multiple turns if necessary
+        response = ""
+        for i, code_chunk in enumerate(code_chunks):
+            chunk_prompt = full_prompt + f"\n\nCode chunk {i+1}/{len(code_chunks)}:\n\n{code_chunk}\n\n"
+            response_chunk = self._get_completion(chunk_prompt, model_name)
+            response += f"Response for chunk {i+1}/{len(code_chunks)}:\n{response_chunk}\n\n"
+
+        return response
+
+    def _split_code_into_chunks(self, code: str, max_tokens: int = 500) -> List[str]:
+        """
+        Split the code into smaller chunks that fit within the token limit of the model.
+
+        Args:
+            code (str): The source code to split.
+            max_tokens (int): Maximum tokens allowed per chunk (adjust this based on model token limits).
+
+        Returns:
+            List[str]: List of code chunks.
+        """
+        lines = code.splitlines()
+        chunk_size = math.ceil(len(lines) / (len(lines) // max_tokens + 1))
+        return ['\n'.join(lines[i:i+chunk_size]) for i in range(0, len(lines), chunk_size)]
+
+    def agent_config(self):
+         return {
+            "engineer": {
+                "name": "engineer",
+                "llm_config": {
+                    "model": "gpt-4o",
+                    "temperature": 0.3,
+                    "seed": 10
+                },
+                "system_message": (
+                    "You are Software Engineer. You follow an approved plan. You write python/shell code to solve tasks. "
+                    "Wrap the code in a code block that specifies the script type. The user can't modify your code. "
+                    "So do not suggest incomplete code which requires others to modify. Don't use a code block if it's not "
+                    "intended to be executed by the executor. Don't include multiple code blocks in one response. Do not ask others "
+                    "to copy and paste the result. Check the execution result returned by the executor. If the result indicates "
+                    "there is an error, fix the error and output the code again. Suggest the full code instead of partial code or "
+                    "code changes. If the error can't be fixed or if the task is not solved even after the code is executed successfully, "
+                    "analyze the problem, revisit your assumption, collect additional info you need, and think of a different approach to try."
+                )
+            }
+    }
+
     def _get_completion(self, prompt: str, model_name: str) -> str:
         """
-        Get a completion from the specified AI model using aider.
+        Get a completion from the specified AI model using Aider.
 
         This method is cached to reduce redundant API calls. It also implements
         rate limiting and retry logic for robustness.
         """
+        from autogen.agentchat import AssistantAgent, UserProxyAgent
         max_retries = 3
         for attempt in range(max_retries):
             try:
                 self._check_rate_limit()
-                self.coder = self.llm_manager.coders[model_name]
-                response = self.coder.run(prompt)
+                #self.coder = self.llm_manager.coders[model_name]
+                #response = self.coder.run(prompt)
+                config = self.agent_config()
+                assistant = AssistantAgent(name="CodeAnalyzer", llm_config=config["engineer"]["llm_config"], system_message=config["engineer"]["system_message"])
+                user_proxy = UserProxyAgent("user_proxy", code_execution_config={"executor": autogen.coding.LocalCommandLineCodeExecutor(work_dir="coding")}, human_input_mode="TERMINATE", max_consecutive_auto_reply=1)
+                user_proxy.initiate_chat(assistant,message=prompt)
+                response = user_proxy.send(
+                        recipient=assistant,
+                        message="exit")
+
                 self._update_rate_limit(len(response.split()))  # Approximation of token count
                 return response
             except Exception as e:
@@ -135,10 +235,47 @@ class ReverseEngineer:
                     raise ReverseEngineerError(f"Error in API call after {max_retries} attempts: {str(e)}")
                 time.sleep(2 ** attempt)  # Exponential backoff
 
-    def analyze(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
-        """Analyze the given code using aider."""
+
+    def refactor(self, file_path: str, code: str, language: str, model_name: Optional[str] = None, test_file_name: Optional[str] = None) -> str:
+        """
+        Suggest refactoring improvements for the given code using aider, based on the issues detected during static analysis.
+
+        This function leverages the static analysis issues to provide targeted refactorings aimed at improving
+        readability, maintainability, and adherence to best practices.
+        """
         model_name = model_name or self.default_model
-        prompt = f"Analyze the following {language.value} code:\n\n{code}\n\nProvide a detailed analysis of its functionality, design choices, and interactions."
+
+        # Step 1: Perform static analysis to detect issues
+        static_analyzer = StaticAnalyzer(file_path, code, test_file_name)
+        issues = static_analyzer.analyze()
+        # Step 2: Construct the refactor prompt, incorporating the issues detected
+        prompt = (
+            f"Refactor the following {language.value} code to address the following issues:\n\n"
+            f"{code}\n\n"
+            f"The following issues were detected during {issues}\n"
+        )
+
+        # Final instructions to refactor the code for improvements
+        prompt += (
+            "Please refactor the code to improve readability, maintainability, and adherence to best practices. "
+            "Demonstrate mastery of the following concepts in your refactored code:\n\n"
+            "SOLID Principles: Implement the Single Responsibility Principle (SRP), Open/Closed Principle (OCP), "
+            "Liskov Substitution Principle (LSP), Interface Segregation Principle (ISP), and Dependency Inversion Principle (DIP).\n"
+            "Clean Code: Ensure clear and meaningful naming of variables, functions, and classes; short, focused functions that do one thing; "
+            "relevant and helpful comments; and consistent, readable code formatting.\n"
+            "DRY: Avoid code duplication by using abstraction and modularity.\n"
+            "KISS & YAGNI: Favor simple, understandable solutions and avoid unnecessary features.\n"
+            "Separation of Concerns: Separate distinct responsibilities into different modules.\n"
+            "Design Patterns: Apply appropriate design patterns to solve common problems.\n"
+            "Test-Driven Development (TDD): Write tests before production code.\n"
+            "Code Reviews: Actively participate in code reviews to ensure quality.\n"
+            "Security Best Practices: Implement appropriate security measures.\n"
+            "Performance Optimization: Optimize your code for better performance.\n"
+            "Documentation: Provide clear and useful documentation for both the code and any APIs involved.\n\n"
+            "As you refactor, explain your design choices, justify your implementation decisions, and demonstrate how you apply these concepts in practice."
+        )
+
+        # Step 3: Send the prompt to the LLM for code refactoring and return the result
         return self._get_completion(prompt, model_name)
 
     def identify_issues(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
@@ -158,13 +295,7 @@ class ReverseEngineer:
         model_name = model_name or self.default_model
         prompt = f"Generate comprehensive documentation for the following {language.value} code:\n\n{code}\n\nInclude function/method descriptions, parameters, return values, and overall purpose."
         return self._get_completion(prompt, model_name)
-
-    def refactor(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
-        """Suggest refactoring improvements for the given code using aider."""
-        model_name = model_name or self.default_model
-        prompt = f"Suggest refactoring improvements for the following {language.value} code to enhance readability, maintainability, and adherence to best practices:\n\n{code}"
-        return self._get_completion(prompt, model_name)
-
+    
     def explain_algorithm(self, code: str, language: Language, model_name: Optional[str] = None) -> str:
         """Explain the algorithm used in the given code using aider."""
         model_name = model_name or self.default_model

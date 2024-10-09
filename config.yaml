@@ -3,7 +3,7 @@ models:
   gpt-4o:
     name: "gpt-4o"
     provider: "OPENAI"
-    max_tokens: 8192
+    max_tokens: 16384
     temperature: 0.1
 rate_limit:
   limit: 150000

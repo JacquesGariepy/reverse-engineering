@@ -2,3 +2,7 @@
 .aider.tags.cache.v3/
 reverseEngineer/__pycache__/
 reverseEngineer/__pycache__/
+coding/
+.cache/
+reverseEngineer/.coverage
+.coverage

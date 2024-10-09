@@ -12,7 +12,7 @@ class LLMManager:
     def _initialize_models(self):
         """Initialize models based on the configuration."""
         models_dict = {}
-        model = Model("gpt-4-turbo")
+        model = Model("gpt-4o")
         for model_name, model_config in self.config.models.items():
             model = models.Model(model_name)
             models_dict[model_name] = model

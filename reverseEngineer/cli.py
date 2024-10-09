@@ -36,10 +36,11 @@ def analyze(
     file: str = typer.Option(..., help="Path to the file or URL containing the code"),
     language: Language = typer.Option(Language.UNKNOWN, help="Programming language of the code"),
     model: str = typer.Option(None, help="Specific model to use for analysis"),
-    output: str = typer.Option(None, help="Name of the output file (optional)")
+    output: str = typer.Option(None, help="Name of the output file (optional)"),
+    test_file: Optional[str] = typer.Option(None, help="Optional test file associated with the code")
 ):
     """Analyze the given code file."""
-    _run_command("analyze", file, language, model, output)
+    _run_command("analyze", file, language, model, output, test_file)
 
 @app.command()
 def identify_issues(
@@ -76,10 +77,11 @@ def refactor(
     file: str = typer.Option(..., help="Path to the file or URL containing the code"),
     language: Language = typer.Option(Language.UNKNOWN, help="Programming language of the code"),
     model: str = typer.Option(None, help="Specific model to use for analysis"),
-    output: str = typer.Option(None, help="Name of the output file (optional)")
+    output: str = typer.Option(None, help="Name of the output file (optional)"),
+    test_file: Optional[str] = typer.Option(None, help="Optional test file associated with the code")
 ):
     """Suggest refactoring improvements for the given code file."""
-    _run_command("refactor", file, language, model, output)
+    _run_command("refactor", file, language, model, output, test_file)
 
 @app.command()
 def explain_algorithm(
@@ -146,7 +148,7 @@ def security_audit(
     """Perform a security audit on the given code file."""
     _run_command("security_audit", file, language, model, output)
 
-def _run_command(command: str, file: str, language: Language, model: str, output: str):
+def _run_command(command: str, file: str, language: Language, model: str, output: str, test_file: Optional[str] = None):
     """Helper function to run commands with common logic."""
     
     if not re_engine:
@@ -154,14 +156,33 @@ def _run_command(command: str, file: str, language: Language, model: str, output
         raise typer.Exit(code=1)
     
     try:
+        # Read the code from the file
         code = read_file(file)
-        result = getattr(re_engine, command)(code, language, model)
+
+        # Call the corresponding method on re_engine, passing the test file if provided
+        if command == "analyze" or command == "refactor":
+            # Si le test_file est fourni, passez-le aussi
+            if test_file:
+                result = getattr(re_engine, command)(file, code, language, model, test_file)
+            else:
+                result = getattr(re_engine, command)(file, code, language, model)
+        else:
+            # Pour les autres commandes
+            if test_file:
+                result = getattr(re_engine, command)(code, language, model, test_file)
+            else:
+                result = getattr(re_engine, command)(code, language, model)
+                
+        # If an output file is specified, save the result to the output file
         if output:
             saved_path = re_engine.save_output(result, command, file, filename=output)
             typer.echo(f"Output saved to: {saved_path}")
         else:
             typer.echo(result)
+        
+        # Enter interactive mode if applicable
         interactive_mode()
+    
     except ReverseEngineerError as e:
         typer.echo(f"Error during {command}: {str(e)}", err=True)
         raise typer.Exit(code=1)

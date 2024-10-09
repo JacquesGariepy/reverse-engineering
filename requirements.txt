@@ -13,3 +13,7 @@ rich==13.3.5  # For rich text and beautiful formatting in the terminal
 prompt_toolkit
 litellm
 backoff
+coverage
+line_profiler
+flake8
+mccabe

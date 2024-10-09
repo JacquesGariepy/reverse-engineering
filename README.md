@@ -37,6 +37,10 @@ Whether you're working with an old, undocumented codebase, optimizing software p
 ## Features
 
 - **🔍 Deep Code Analysis**: Uncover the intricacies of any codebase with AI-powered insights, including code structure, complexity, and logic flow.
+- **📊 Static Code Analysis**: Perform thorough static code analysis during the code review process.
+- **🔄 Refactoring Suggestions**: Provide intelligent refactoring suggestions powered by static analysis for enhanced code quality.
+- **✏️ Code Snippet Auto-Generation**: Automatically generate useful code snippets to accelerate development.
+- **🌐 Internet Requirement Note**: The tool currently requires an active internet connection to support analysis and refactoring features.
 - **🐞 Intelligent Bug Detection**: Automatically identify potential issues in your code, from syntax errors to logical vulnerabilities.
 - **🚀 Performance Optimization**: Get tailored suggestions to boost your code's efficiency, covering best practices in data structures, algorithms, and design patterns.
 - **📚 Automatic Documentation**: Generate comprehensive, human-readable documentation with a single command, saving valuable time in explaining the "what" and "why" of your code.

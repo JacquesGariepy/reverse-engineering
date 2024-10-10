@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 from cryptography.fernet import Fernet
-from exceptions import ReverseEngineerError
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,4 +1,3 @@
-import os
 from config import Config
 from aider import models, coders, io
 from aider.models import Model

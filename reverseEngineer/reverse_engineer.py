@@ -2,25 +2,16 @@
 
 import math
 import os
-import sys
-from typing import Dict, Any, Optional, List, Union
+from typing import Optional, List
 import autogen
-import requests
-from urllib.parse import urlparse
-import typer
 from enum import Enum
 from datetime import datetime
-import json
-import ast
-import re
 from functools import lru_cache, wraps
 import time
 import logging
 from dotenv import load_dotenv
 import yaml
-from pydantic import BaseModel, Field
 from aider import models, prompts, coders, io
-from cryptography.fernet import Fernet  # Added for encryption
 from config import Config
 from exceptions import ReverseEngineerError
 from keys_manager import KeysManager
@@ -143,13 +134,39 @@ class ReverseEngineer:
         code_chunks = self._split_code_into_chunks(code)
 
         # Step 3 and 4: Construct the analysis prompt and include optional test generation instructions
-        full_prompt = (
-            f"Analyze the following source code written in {language}. The following issues were detected "
-            f"during static analysis: {issues}. Please provide a detailed analysis of the identified issues " 
-            f"along with specific recommendations for fixing them. Include a relevant code snippet for each "
-            f"recommendation to demonstrate the solution. Do not include the original source code in your "
-            f"response—focus solely on offering advice, solutions, and examples so the developer can make the corrections independently."
-        )
+        full_prompt = f"""
+                        Analyze the following source code written in {language}. The following issues were detected during static analysis: {issues}. 
+                        Please provide a detailed analysis of the identified issues along with specific recommendations for fixing them. 
+                        Include a relevant code snippet for each recommendation to demonstrate the solution. 
+                        Do not include the original source code in your response—focus solely on offering advice, solutions, and examples so the developer can make the corrections independently.
+
+                        Please refactor the {language} code:
+                        ___
+
+                        {code}
+
+                        ___
+
+                        to improve readability, maintainability, and adherence to best practices. Demonstrate mastery of the following concepts in your refactored code:
+                        - The following issues were detected during static analysis: {issues}.
+                        - SOLID Principles: Implement the Single Responsibility Principle (SRP), Open/Closed Principle (OCP), Liskov Substitution Principle (LSP), Interface Segregation Principle (ISP), and Dependency Inversion Principle (DIP).
+                        - Clean Code: Ensure clear and meaningful naming of variables, functions, and classes; short, focused functions that do one thing; relevant and helpful comments; and consistent, readable code formatting.
+                        - DRY: Avoid code duplication by using abstraction and modularity.
+                        - KISS & YAGNI: Favor simple, understandable solutions and avoid unnecessary features.
+                        - Separation of Concerns: Separate distinct responsibilities into different modules.
+                        - Design Patterns: Apply appropriate design patterns to solve common problems.
+                        - Test-Driven Development (TDD): Write tests before production code.
+                        - CI/CD: Integrate and deploy code frequently using Continuous Integration/Continuous Deployment practices.
+                        - Code Reviews: Actively participate in code reviews to ensure quality.
+                        - Version Control: Effectively use Git (or another version control system) to manage code versions.
+                        - Security Best Practices: Implement appropriate security measures.
+                        - Performance Optimization: Optimize your code for better performance.
+                        - Documentation: Provide clear and useful documentation for both the code and any APIs involved.
+
+                        Important constraints:
+                        - You must not remove any functionality. Ensure that your refactoring does not introduce any breaking changes.
+                        - You must provide everything required for this task without omitting anything.
+                        """
 
         # If a test file is provided, include test generation instructions
         if test_file_name:
@@ -189,7 +206,7 @@ class ReverseEngineer:
                 "name": "engineer",
                 "llm_config": {
                     "model": "gpt-4o",
-                    "temperature": 0.3,
+                    "temperature": 0.1,
                     "seed": 10
                 },
                 "system_message": (
@@ -248,32 +265,25 @@ class ReverseEngineer:
         # Step 1: Perform static analysis to detect issues
         static_analyzer = StaticAnalyzer(file_path, code, test_file_name)
         issues = static_analyzer.analyze()
-        # Step 2: Construct the refactor prompt, incorporating the issues detected
-        prompt = (
-            f"Refactor the following {language.value} code to address the following issues:\n\n"
-            f"{code}\n\n"
-            f"The following issues were detected during {issues}\n"
-        )
-
         # Final instructions to refactor the code for improvements
-        prompt += (
-            "Please refactor the code to improve readability, maintainability, and adherence to best practices. "
-            "Demonstrate mastery of the following concepts in your refactored code:\n\n"
-            "SOLID Principles: Implement the Single Responsibility Principle (SRP), Open/Closed Principle (OCP), "
-            "Liskov Substitution Principle (LSP), Interface Segregation Principle (ISP), and Dependency Inversion Principle (DIP).\n"
-            "Clean Code: Ensure clear and meaningful naming of variables, functions, and classes; short, focused functions that do one thing; "
-            "relevant and helpful comments; and consistent, readable code formatting.\n"
-            "DRY: Avoid code duplication by using abstraction and modularity.\n"
-            "KISS & YAGNI: Favor simple, understandable solutions and avoid unnecessary features.\n"
-            "Separation of Concerns: Separate distinct responsibilities into different modules.\n"
-            "Design Patterns: Apply appropriate design patterns to solve common problems.\n"
-            "Test-Driven Development (TDD): Write tests before production code.\n"
-            "Code Reviews: Actively participate in code reviews to ensure quality.\n"
-            "Security Best Practices: Implement appropriate security measures.\n"
-            "Performance Optimization: Optimize your code for better performance.\n"
-            "Documentation: Provide clear and useful documentation for both the code and any APIs involved.\n\n"
-            "As you refactor, explain your design choices, justify your implementation decisions, and demonstrate how you apply these concepts in practice."
-        )
+        prompt = f"""
+            Please refactor the {language.value} code : \n\n___\n\n{code}\n\n___\n\nto improve readability, maintainability, and adherence to best practices. Demonstrate mastery of the following concepts in your refactored code:
+            - The following issues were detected during \n\n{issues}.  
+            - SOLID Principles: Implement the Single Responsibility Principle (SRP), Open/Closed Principle (OCP), Liskov Substitution Principle (LSP), Interface Segregation Principle (ISP), and Dependency Inversion Principle (DIP).
+            - Clean Code: Ensure clear and meaningful naming of variables, functions, and classes; short, focused functions that do one thing; relevant and helpful comments; and consistent, readable code formatting.
+            - DRY: Avoid code duplication by using abstraction and modularity.
+            - KISS & YAGNI: Favor simple, understandable solutions and avoid unnecessary features.
+            - Separation of Concerns: Separate distinct responsibilities into different modules.
+            - Design Patterns: Apply appropriate design patterns to solve common problems.
+            - Code Reviews: Actively participate in code reviews to ensure quality.
+            - Security Best Practices: Implement appropriate security measures.
+            - Performance Optimization: Optimize your code for better performance.
+            - Documentation: Provide clear and useful documentation for both the code and any APIs involved.
+
+            Important constraints:
+            - You must not remove any functionality. Ensure that your refactoring does not introduce any breaking changes.
+            - You must provide everything required for this task without omitting anything.
+            """
 
         # Step 3: Send the prompt to the LLM for code refactoring and return the result
         return self._get_completion(prompt, model_name)

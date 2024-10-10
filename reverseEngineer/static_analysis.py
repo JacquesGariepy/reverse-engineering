@@ -1,12 +1,6 @@
 import ast
-import cProfile
-from io import StringIO
-import os
-import pstats
 import re
-import runpy
 import subprocess
-import timeit
 from typing import List
 import coverage
 import unittest
@@ -155,8 +149,7 @@ class StaticAnalyzer:
         """Checks for indentation errors in the code."""
         try:
             # Tente de parser le fichier pour détecter les erreurs d'indentation via AST
-            content = self.content
-            ast.parse(content)
+            tree = ast.parse(self.content)
         except IndentationError as e:
             # Capture et stocke les erreurs d'indentation
             self.issues.append(
@@ -196,8 +189,7 @@ class StaticAnalyzer:
     def check_docstrings(self):
         """Vérifie les docstrings manquantes dans les fonctions et les classes."""
         try:
-            content = self.content
-            tree = ast.parse(content)
+            tree = ast.parse(self.content)
 
             for node in ast.walk(tree):
                 if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
@@ -231,8 +223,7 @@ class StaticAnalyzer:
             'input': "In Python 2.x, 'input()' evaluates user input as Python code, which is unsafe. Use 'raw_input()' in Python 2.x, or 'input()' in Python 3.x, which is safe."
         }
         
-        content = self.content
-        tree = ast.parse(content)
+        tree = ast.parse(self.content)
 
         for node in ast.walk(tree):
             # Vérifier si une fonction obsolète est utilisée
@@ -298,8 +289,7 @@ class StaticAnalyzer:
     def check_try_except_usage(self, max_try_except_threshold=3):
         """Check if a method or function exceeds the maximum number of allowed try-except blocks."""
         try:
-            content = self.content
-            tree = ast.parse(content)
+            ctree = ast.parse(self.content)
 
             def count_try_except_in_node(node):
                 """Count the number of try-except blocks in the given function or method."""
@@ -330,8 +320,7 @@ class StaticAnalyzer:
     def check_dead_code(self):
         """Identifies dead code (code that is never executed)."""
         try:
-            content = self.content
-            tree = ast.parse(content)
+            tree = ast.parse(self.content)
 
             def detect_unreachable_code_after_statements(node):
                 """Detect code that is unreachable after control-flow altering statements."""
@@ -385,8 +374,7 @@ class StaticAnalyzer:
             MAX_FUNCTION_COUNT = self.MAX_FUNCTION_COUNT
             MAX_CLASS_COUNT = self.MAX_CLASS_COUNT
 
-            content = self.content
-            tree = ast.parse(content)
+            tree = ast.parse(self.content)
             lines = self.loader.load_file_lines()
             # Check for large files based on line count
             if len(lines) > MAX_LINES_PER_FILE:
@@ -446,8 +434,7 @@ class StaticAnalyzer:
     def check_variable_naming_and_builtins(self):
         """Checks variable, function names for PEP 8 violations and flags dangerous or deprecated built-in usage."""
         try:
-            content = self.content
-            tree = ast.parse(content)
+            tree = ast.parse(self.content)
 
             snake_case_pattern = r'^[a-z_][a-z0-9_]*$'  # Snake case for variables and functions
             pascal_case_pattern = r'^[A-Z][a-zA-Z0-9]*$'  # Pascal case for class names
@@ -533,8 +520,7 @@ class StaticAnalyzer:
     def check_resource_management(self):
         """Checks for proper resource management, ensuring files, sockets, and other resources are properly closed."""
         try:
-            content = self.content
-            tree = ast.parse(content)
+            tree = ast.parse(self.content)
 
             # Dictionary of resources and their expected closing method
             resource_types = {
@@ -663,8 +649,7 @@ class StaticAnalyzer:
     def check_functions_length(self):
         """Vérifie les fonctions qui sont trop longues, suggérant une refactorisation possible."""
 
-        content = self.content
-        tree = ast.parse(content)
+        tree = ast.parse(self.content)
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 func_length = len(node.body)
@@ -677,8 +662,7 @@ class StaticAnalyzer:
         """Vérifie les dépendances obsolètes en tenant compte des imports du fichier."""
         try:
             # Analyse des imports dans le fichier
-            content = self.content
-            tree = ast.parse(content)
+            tree = ast.parse(self.content)
 
             imported_modules = set()
             # Parcourt l'arbre syntaxique pour trouver les modules importés
@@ -759,8 +743,7 @@ class StaticAnalyzer:
     def check_concurrency_issues(self):
         """Identifies concurrency issues such as improper usage of locks and access to shared resources."""
         try:
-            content = self.content
-            tree = ast.parse(content)
+            tree = ast.parse(self.content)
 
             shared_resource_access = []
             
@@ -837,8 +820,7 @@ class StaticAnalyzer:
     
     def check_type_annotations(self):
         """Vérifie les annotations de type manquantes dans les définitions de fonctions."""
-        content = self.content
-        tree = ast.parse(content)
+        tree = ast.parse(self.content)
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 if not node.returns or not all(arg.annotation is not None for arg in node.args.args):
@@ -848,8 +830,7 @@ class StaticAnalyzer:
 
     def check_design_patterns(self):
         """Identifie les modèles de conception utilisés dans le code."""
-        content = self.content
-        tree = ast.parse(content)
+        tree = ast.parse(self.content)
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef) and any(isinstance(n, ast.FunctionDef) and n.name == '__init__' for n in node.body):
                 if any(isinstance(stmt, ast.Assign) for stmt in node.body):
@@ -911,8 +892,7 @@ class StaticAnalyzer:
 
     def check_error_handling(self):
         """Analyse la gestion des erreurs dans le fichier."""
-        content = self.content
-        tree = ast.parse(content)
+        tree = ast.parse(self.content)
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Try):
@@ -946,8 +926,7 @@ class StaticAnalyzer:
 
     def check_logging(self):
         """Vérifie la présence et la qualité des instructions de journalisation."""
-        content = self.content
-        tree = ast.parse(content)
+        tree = ast.parse(self.content)
 
         has_logging_import = False
         for node in ast.walk(tree):

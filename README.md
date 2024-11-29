@@ -50,6 +50,14 @@ Whether you're working with an old, undocumented codebase, optimizing software p
 - **🌐 Multi-Language Support**: Seamless support for multiple programming languages, including Python, Java, C++, JavaScript, Ruby, Rust, and more.
 - **🧠 Algorithm Explanation**: Demystify complex algorithms with clear, concise explanations, perfect for educational purposes.
 - **🔄 Code Translation**: Seamlessly convert code between different programming languages—ideal for migrating legacy systems or adapting software for new environments.
+- **🔍 Identify Issues**: Identify potential issues, vulnerabilities, or areas for improvement in the code.
+- **🚀 Optimize**: Suggest improvements to optimize performance and security for the code.
+- **📚 Generate Documentation**: Generate comprehensive documentation for the code, including function/method descriptions, parameters, return values, and overall purpose.
+- **🧠 Explain Algorithm**: Explain the algorithm used in the code in detail, including approach, time complexity, and space complexity.
+- **🧪 Generate Test Cases**: Generate comprehensive test cases for the code, including normal cases, edge cases, and potential error scenarios.
+- **🔍 Identify Design Patterns**: Identify and explain any design patterns used in the code.
+- **🔄 Convert Language**: Convert the code from one programming language to another, ensuring functionality remains the same and adheres to best practices.
+- **🔒 Security Audit**: Perform a comprehensive security audit on the code, identifying potential security vulnerabilities, suggesting fixes, and explaining the implications of each issue.
 
 ## Motivation
 
@@ -273,6 +281,9 @@ python cli.py
 - [PyYAML](https://pyyaml.org/): For parsing YAML configuration files.
 - [requests](https://docs.python-requests.org/en/master/): For making HTTP requests.
 - [aider](https://github.com/paul-gauthier/aider): For interacting with language models.
+- [cryptography](https://cryptography.io/): For secure encryption and decryption of API keys.
+- [rich](https://rich.readthedocs.io/): For rich text and beautiful formatting in the terminal.
+- [mypy](http://mypy-lang.org/): For optional static typing and type checking in Python.
 
 ## Best Practices
 

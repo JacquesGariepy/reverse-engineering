@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-**reverse-engineering** is a revolutionary AI-powered command-line tool designed to help developers, engineers, researchers, and students interact with source code like never before. By leveraging cutting-edge Large Language Models (LLMs), it brings capabilities such as code analysis, refactoring suggestions, and security audits directly to your development environment, transforming the way you approach software development.
+**reverse-engineering** is a  AI-powered command-line tool designed to help developers, engineers, researchers, and students interact with source code. By leveraging cutting-edge Large Language Models (LLMs), it brings capabilities such as code analysis, refactoring suggestions, and security audits directly to your development environment, transforming the way you approach software development.
 
 Whether you're working with an old, undocumented codebase, optimizing software performance, or learning new coding paradigms, **reverse-engineering** is your trusted AI companion in the software engineering journey.
 

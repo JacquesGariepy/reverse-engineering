@@ -9,6 +9,42 @@ from line_profiler import LineProfiler
 
 from solid_analyzer import DIPAnalyzer, ISPAnalyzer, LSPAnalyzer, OCPAnalyzer, SOLIDAnalyzerEngine, SRPAnalyzer
 
+# New imports for the listed libraries
+import flake8
+import black
+import isort
+import docformatter
+import pylint.lint
+import pyflakes.api
+import ruff
+import mypy.api
+import pytype
+import pyright
+import bandit
+import safety
+import semgrep
+import truffleHog
+import radon
+import lizard
+import xenon
+import vulture
+import pydeadcode
+import pipaudit
+import poetry_audit
+import dephell
+import pydocstyle
+import darglint
+import interrogate
+import pyperf
+import scalene
+import memory_profiler
+import cProfile
+import pytest
+import coverage
+import hypothesis
+import sqlmap
+import regex_checker
+
 class PythonFileLoader:
     def __init__(self, content):
         self.content = content
@@ -117,6 +153,10 @@ class StaticAnalyzer:
         self.check_docstrings()
         self.check_conformity_to_pep8()
         self.check_functions_length()
+        self.check_flake8()
+        self.check_black()
+        self.check_isort()
+        self.check_docformatter()
 
     def check_potential_bugs(self):
         """Recherche les bogues potentiels tels que le code mort et les variables non utilisées."""
@@ -124,16 +164,26 @@ class StaticAnalyzer:
         self.check_dead_code()
         self.check_resource_management()
         self.check_concurrency_issues()
+        self.check_pylint()
+        self.check_ruff()
+        self.check_sonarqube()
 
     def check_security(self):
         """Recherche les problèmes de sécurité tels que les secrets codés en dur."""
         self.check_secrets_in_code()
-        #Bandit: Specifically designed to find common security issues in Python code.
+        self.check_bandit()
+        self.check_safety()
+        self.check_semgrep()
+        self.check_trufflehog()
+
     def check_design_principles(self):
         """Vérifie le respect des principes SOLID."""
         self.check_solid_principles()
         self.check_type_annotations()
         self.check_design_patterns()
+        self.check_mypy()
+        self.check_pytype()
+        self.check_pyright()
 
     def check_maintainability(self):
         """Vérifie les aspects liés à la maintenabilité du code."""
@@ -144,6 +194,9 @@ class StaticAnalyzer:
         self.check_variable_naming_and_builtins()
         self.check_modularity()
         self.check_deprecated_functions()
+        self.check_radon()
+        self.check_lizard()
+        self.check_xenon()
 
     def check_indentation(self):
         """Checks for indentation errors in the code."""
@@ -953,3 +1006,315 @@ class StaticAnalyzer:
             self.issues.append(
                 "No logging module imported. Consider adding 'import logging' at the top of the file."
             )
+
+    def check_flake8(self):
+        """Run Flake8 to check for PEP 8 compliance, syntax errors, and common issues."""
+        try:
+            result = subprocess.run(['flake8', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.stdout:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Flake8: {str(e)}")
+
+    def check_black(self):
+        """Run Black to ensure code formatting consistency."""
+        try:
+            result = subprocess.run(['black', '--check', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.append(f"Black formatting issues found in {self.file_path}.")
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Black: {str(e)}")
+
+    def check_isort(self):
+        """Run isort to ensure proper sorting of imports."""
+        try:
+            result = subprocess.run(['isort', '--check-only', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.append(f"isort import sorting issues found in {self.file_path}.")
+        except Exception as e:
+            self.issues.append(f"Error occurred while running isort: {str(e)}")
+
+    def check_docformatter(self):
+        """Run Docformatter to ensure docstrings follow PEP 257."""
+        try:
+            result = subprocess.run(['docformatter', '--check', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.append(f"Docformatter issues found in {self.file_path}.")
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Docformatter: {str(e)}")
+
+    def check_pylint(self):
+        """Run Pylint to analyze code quality and detect errors."""
+        try:
+            result = subprocess.run(['pylint', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Pylint: {str(e)}")
+
+    def check_ruff(self):
+        """Run Ruff to analyze code quality and detect errors."""
+        try:
+            result = subprocess.run(['ruff', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Ruff: {str(e)}")
+
+    def check_sonarqube(self):
+        """Run SonarQube to analyze code quality and detect errors."""
+        try:
+            result = subprocess.run(['sonar-scanner', '-Dsonar.projectKey=my_project', f'-Dsonar.sources={self.file_path}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running SonarQube: {str(e)}")
+
+    def check_mypy(self):
+        """Run MyPy to check for type annotation issues."""
+        try:
+            result = subprocess.run(['mypy', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running MyPy: {str(e)}")
+
+    def check_pytype(self):
+        """Run Pytype to check for type annotation issues."""
+        try:
+            result = subprocess.run(['pytype', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Pytype: {str(e)}")
+
+    def check_pyright(self):
+        """Run Pyright to check for type annotation issues."""
+        try:
+            result = subprocess.run(['pyright', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Pyright: {str(e)}")
+
+    def check_bandit(self):
+        """Run Bandit to check for security issues."""
+        try:
+            result = subprocess.run(['bandit', '-r', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Bandit: {str(e)}")
+
+    def check_safety(self):
+        """Run Safety to check for security issues in dependencies."""
+        try:
+            result = subprocess.run(['safety', 'check'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Safety: {str(e)}")
+
+    def check_semgrep(self):
+        """Run Semgrep to check for security issues."""
+        try:
+            result = subprocess.run(['semgrep', '--config', 'auto', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Semgrep: {str(e)}")
+
+    def check_trufflehog(self):
+        """Run TruffleHog to check for secrets in code."""
+        try:
+            result = subprocess.run(['trufflehog', 'filesystem', '--directory', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running TruffleHog: {str(e)}")
+
+    def check_radon(self):
+        """Run Radon to check for cyclomatic complexity and maintainability index."""
+        try:
+            result = subprocess.run(['radon', 'cc', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+            result = subprocess.run(['radon', 'mi', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Radon: {str(e)}")
+
+    def check_lizard(self):
+        """Run Lizard to check for cyclomatic complexity and other metrics."""
+        try:
+            result = subprocess.run(['lizard', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Lizard: {str(e)}")
+
+    def check_xenon(self):
+        """Run Xenon to check for technical debt."""
+        try:
+            result = subprocess.run(['xenon', '--max-absolute', 'A', '--max-modules', 'A', '--max-average', 'A', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Xenon: {str(e)}")
+
+    def check_vulture(self):
+        """Run Vulture to check for dead code."""
+        try:
+            result = subprocess.run(['vulture', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Vulture: {str(e)}")
+
+    def check_pydeadcode(self):
+        """Run PyDeadCode to check for dead code."""
+        try:
+            result = subprocess.run(['pydeadcode', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running PyDeadCode: {str(e)}")
+
+    def check_pipaudit(self):
+        """Run Pip-audit to check for vulnerabilities in dependencies."""
+        try:
+            result = subprocess.run(['pip-audit'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Pip-audit: {str(e)}")
+
+    def check_poetry_audit(self):
+        """Run Poetry Audit to check for vulnerabilities in dependencies."""
+        try:
+            result = subprocess.run(['poetry', 'audit'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Poetry Audit: {str(e)}")
+
+    def check_dephell(self):
+        """Run DepHell to check for vulnerabilities in dependencies."""
+        try:
+            result = subprocess.run(['dephell', 'audit'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running DepHell: {str(e)}")
+
+    def check_pydocstyle(self):
+        """Run Pydocstyle to check for PEP 257 compliance in docstrings."""
+        try:
+            result = subprocess.run(['pydocstyle', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Pydocstyle: {str(e)}")
+
+    def check_darglint(self):
+        """Run Darglint to check if docstrings match function signatures."""
+        try:
+            result = subprocess.run(['darglint', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Darglint: {str(e)}")
+
+    def check_interrogate(self):
+        """Run Interrogate to check for docstring coverage."""
+        try:
+            result = subprocess.run(['interrogate', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Interrogate: {str(e)}")
+
+    def check_pyperf(self):
+        """Run PyPerf to measure code performance."""
+        try:
+            result = subprocess.run(['pyperf', 'timeit', '--setup', f'from {self.file_path} import *', 'main()'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running PyPerf: {str(e)}")
+
+    def check_scalene(self):
+        """Run Scalene to profile code performance."""
+        try:
+            result = subprocess.run(['scalene', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Scalene: {str(e)}")
+
+    def check_memory_profiler(self):
+        """Run Memory Profiler to measure memory usage."""
+        try:
+            result = subprocess.run(['mprof', 'run', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Memory Profiler: {str(e)}")
+
+    def check_cprofile(self):
+        """Run cProfile to profile code performance."""
+        try:
+            result = subprocess.run(['python', '-m', 'cProfile', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running cProfile: {str(e)}")
+
+    def check_pytest(self):
+        """Run Pytest to check for test coverage."""
+        try:
+            result = subprocess.run(['pytest', '--cov', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Pytest: {str(e)}")
+
+    def check_coverage(self):
+        """Run Coverage.py to check for test coverage."""
+        try:
+            result = subprocess.run(['coverage', 'run', '--source', self.file_path, '-m', 'pytest'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+            result = subprocess.run(['coverage', 'report'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Coverage.py: {str(e)}")
+
+    def check_hypothesis(self):
+        """Run Hypothesis to check for property-based testing."""
+        try:
+            result = subprocess.run(['pytest', '--hypothesis-show-statistics'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Hypothesis: {str(e)}")
+
+    def check_sqlmap(self):
+        """Run SQLMap to check for SQL injection vulnerabilities."""
+        try:
+            result = subprocess.run(['sqlmap', '-u', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running SQLMap: {str(e)}")
+
+    def check_regex_checker(self):
+        """Run Regex Checker to check for inefficient or dangerous regular expressions."""
+        try:
+            result = subprocess.run(['regex_checker', self.file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                self.issues.extend(result.stdout.splitlines())
+        except Exception as e:
+            self.issues.append(f"Error occurred while running Regex Checker: {str(e)}")

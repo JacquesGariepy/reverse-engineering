@@ -305,14 +305,6 @@ We're continuously working to improve **reverse-engineering**. Here's what we ha
 - **API Endpoint for Integration with CI/CD Pipelines**.
 - **Collaborative Code Analysis Features**: Real-time code analysis across distributed teams.
 
-## Community
-
-Join our community to discuss **reverse-engineering**, share your experiences, and get help:
-
-- [Discord Server](https://discord.gg/reverse-engineering)
-- [Reddit Community](https://www.reddit.com/r/reverse-engineeringAI)
-- [Twitter](https://twitter.com/reverse-engineeringAI)
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
